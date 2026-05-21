@@ -541,3 +541,5 @@ add_custom_target(format
 	COMMENT "Running clang-format on all source files: ${ALL_CXX_SOURCE_FILES}"
 )
 # format files end
+
+add_subdirectory(demo)
