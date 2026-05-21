@@ -4,119 +4,135 @@
 
 #include "table/filter_block.h"
 
-#include "gtest/gtest.h"
 #include "leveldb/filter_policy.h"
+
 #include "util/coding.h"
 #include "util/hash.h"
 #include "util/logging.h"
 #include "util/testutil.h"
 
-namespace leveldb {
+#include "gtest/gtest.h"
 
-// For testing: emit an array with one hash value per key
-class TestHashFilter : public FilterPolicy {
- public:
-  const char* Name() const override { return "TestHashFilter"; }
+namespace leveldb
+{
 
-  void CreateFilter(const Slice* keys, int n, std::string* dst) const override {
-    for (int i = 0; i < n; i++) {
-      uint32_t h = Hash(keys[i].data(), keys[i].size(), 1);
-      PutFixed32(dst, h);
+    // For testing: emit an array with one hash value per key
+    class TestHashFilter : public FilterPolicy
+    {
+    public:
+        const char* Name() const override
+        {
+            return "TestHashFilter";
+        }
+
+        void CreateFilter(const Slice* keys, int n, std::string* dst) const override
+        {
+            for (int i = 0; i < n; i++)
+            {
+                uint32_t h = Hash(keys[i].data(), keys[i].size(), 1);
+                PutFixed32(dst, h);
+            }
+        }
+
+        bool KeyMayMatch(const Slice& key, const Slice& filter) const override
+        {
+            uint32_t h = Hash(key.data(), key.size(), 1);
+            for (size_t i = 0; i + 4 <= filter.size(); i += 4)
+            {
+                if (h == DecodeFixed32(filter.data() + i))
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+    };
+
+    class FilterBlockTest : public testing::Test
+    {
+    public:
+        TestHashFilter policy_;
+    };
+
+    TEST_F(FilterBlockTest, EmptyBuilder)
+    {
+        FilterBlockBuilder builder(&policy_);
+        Slice block = builder.Finish();
+        ASSERT_EQ("\\x00\\x00\\x00\\x00\\x0b", EscapeString(block));
+        FilterBlockReader reader(&policy_, block);
+        ASSERT_TRUE(reader.KeyMayMatch(0, "foo"));
+        ASSERT_TRUE(reader.KeyMayMatch(100000, "foo"));
     }
-  }
 
-  bool KeyMayMatch(const Slice& key, const Slice& filter) const override {
-    uint32_t h = Hash(key.data(), key.size(), 1);
-    for (size_t i = 0; i + 4 <= filter.size(); i += 4) {
-      if (h == DecodeFixed32(filter.data() + i)) {
-        return true;
-      }
+    TEST_F(FilterBlockTest, SingleChunk)
+    {
+        FilterBlockBuilder builder(&policy_);
+        builder.StartBlock(100);
+        builder.AddKey("foo");
+        builder.AddKey("bar");
+        builder.AddKey("box");
+        builder.StartBlock(200);
+        builder.AddKey("box");
+        builder.StartBlock(300);
+        builder.AddKey("hello");
+        Slice block = builder.Finish();
+        FilterBlockReader reader(&policy_, block);
+        ASSERT_TRUE(reader.KeyMayMatch(100, "foo"));
+        ASSERT_TRUE(reader.KeyMayMatch(100, "bar"));
+        ASSERT_TRUE(reader.KeyMayMatch(100, "box"));
+        ASSERT_TRUE(reader.KeyMayMatch(100, "hello"));
+        ASSERT_TRUE(reader.KeyMayMatch(100, "foo"));
+        ASSERT_TRUE(!reader.KeyMayMatch(100, "missing"));
+        ASSERT_TRUE(!reader.KeyMayMatch(100, "other"));
     }
-    return false;
-  }
-};
 
-class FilterBlockTest : public testing::Test {
- public:
-  TestHashFilter policy_;
-};
+    TEST_F(FilterBlockTest, MultiChunk)
+    {
+        FilterBlockBuilder builder(&policy_);
 
-TEST_F(FilterBlockTest, EmptyBuilder) {
-  FilterBlockBuilder builder(&policy_);
-  Slice block = builder.Finish();
-  ASSERT_EQ("\\x00\\x00\\x00\\x00\\x0b", EscapeString(block));
-  FilterBlockReader reader(&policy_, block);
-  ASSERT_TRUE(reader.KeyMayMatch(0, "foo"));
-  ASSERT_TRUE(reader.KeyMayMatch(100000, "foo"));
-}
+        // First filter
+        builder.StartBlock(0);
+        builder.AddKey("foo");
+        builder.StartBlock(2000);
+        builder.AddKey("bar");
 
-TEST_F(FilterBlockTest, SingleChunk) {
-  FilterBlockBuilder builder(&policy_);
-  builder.StartBlock(100);
-  builder.AddKey("foo");
-  builder.AddKey("bar");
-  builder.AddKey("box");
-  builder.StartBlock(200);
-  builder.AddKey("box");
-  builder.StartBlock(300);
-  builder.AddKey("hello");
-  Slice block = builder.Finish();
-  FilterBlockReader reader(&policy_, block);
-  ASSERT_TRUE(reader.KeyMayMatch(100, "foo"));
-  ASSERT_TRUE(reader.KeyMayMatch(100, "bar"));
-  ASSERT_TRUE(reader.KeyMayMatch(100, "box"));
-  ASSERT_TRUE(reader.KeyMayMatch(100, "hello"));
-  ASSERT_TRUE(reader.KeyMayMatch(100, "foo"));
-  ASSERT_TRUE(!reader.KeyMayMatch(100, "missing"));
-  ASSERT_TRUE(!reader.KeyMayMatch(100, "other"));
-}
+        // Second filter
+        builder.StartBlock(3100);
+        builder.AddKey("box");
 
-TEST_F(FilterBlockTest, MultiChunk) {
-  FilterBlockBuilder builder(&policy_);
+        // Third filter is empty
 
-  // First filter
-  builder.StartBlock(0);
-  builder.AddKey("foo");
-  builder.StartBlock(2000);
-  builder.AddKey("bar");
+        // Last filter
+        builder.StartBlock(9000);
+        builder.AddKey("box");
+        builder.AddKey("hello");
 
-  // Second filter
-  builder.StartBlock(3100);
-  builder.AddKey("box");
+        Slice block = builder.Finish();
+        FilterBlockReader reader(&policy_, block);
 
-  // Third filter is empty
+        // Check first filter
+        ASSERT_TRUE(reader.KeyMayMatch(0, "foo"));
+        ASSERT_TRUE(reader.KeyMayMatch(2000, "bar"));
+        ASSERT_TRUE(!reader.KeyMayMatch(0, "box"));
+        ASSERT_TRUE(!reader.KeyMayMatch(0, "hello"));
 
-  // Last filter
-  builder.StartBlock(9000);
-  builder.AddKey("box");
-  builder.AddKey("hello");
+        // Check second filter
+        ASSERT_TRUE(reader.KeyMayMatch(3100, "box"));
+        ASSERT_TRUE(!reader.KeyMayMatch(3100, "foo"));
+        ASSERT_TRUE(!reader.KeyMayMatch(3100, "bar"));
+        ASSERT_TRUE(!reader.KeyMayMatch(3100, "hello"));
 
-  Slice block = builder.Finish();
-  FilterBlockReader reader(&policy_, block);
+        // Check third filter (empty)
+        ASSERT_TRUE(!reader.KeyMayMatch(4100, "foo"));
+        ASSERT_TRUE(!reader.KeyMayMatch(4100, "bar"));
+        ASSERT_TRUE(!reader.KeyMayMatch(4100, "box"));
+        ASSERT_TRUE(!reader.KeyMayMatch(4100, "hello"));
 
-  // Check first filter
-  ASSERT_TRUE(reader.KeyMayMatch(0, "foo"));
-  ASSERT_TRUE(reader.KeyMayMatch(2000, "bar"));
-  ASSERT_TRUE(!reader.KeyMayMatch(0, "box"));
-  ASSERT_TRUE(!reader.KeyMayMatch(0, "hello"));
+        // Check last filter
+        ASSERT_TRUE(reader.KeyMayMatch(9000, "box"));
+        ASSERT_TRUE(reader.KeyMayMatch(9000, "hello"));
+        ASSERT_TRUE(!reader.KeyMayMatch(9000, "foo"));
+        ASSERT_TRUE(!reader.KeyMayMatch(9000, "bar"));
+    }
 
-  // Check second filter
-  ASSERT_TRUE(reader.KeyMayMatch(3100, "box"));
-  ASSERT_TRUE(!reader.KeyMayMatch(3100, "foo"));
-  ASSERT_TRUE(!reader.KeyMayMatch(3100, "bar"));
-  ASSERT_TRUE(!reader.KeyMayMatch(3100, "hello"));
-
-  // Check third filter (empty)
-  ASSERT_TRUE(!reader.KeyMayMatch(4100, "foo"));
-  ASSERT_TRUE(!reader.KeyMayMatch(4100, "bar"));
-  ASSERT_TRUE(!reader.KeyMayMatch(4100, "box"));
-  ASSERT_TRUE(!reader.KeyMayMatch(4100, "hello"));
-
-  // Check last filter
-  ASSERT_TRUE(reader.KeyMayMatch(9000, "box"));
-  ASSERT_TRUE(reader.KeyMayMatch(9000, "hello"));
-  ASSERT_TRUE(!reader.KeyMayMatch(9000, "foo"));
-  ASSERT_TRUE(!reader.KeyMayMatch(9000, "bar"));
-}
-
-}  // namespace leveldb
+} // namespace leveldb
