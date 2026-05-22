@@ -525,9 +525,15 @@ find_program(CLANG_FORMAT_EXE NAMES clang-format)
 message(STATUS "The clang-format executable is: ${CLANG_FORMAT_EXE} CMAKE_SOURCE_DIR=${CMAKE_SOURCE_DIR}/src/dbase")
 file(GLOB_RECURSE ALL_CXX_SOURCE_FILES
     ${CMAKE_SOURCE_DIR}/db/*.cc
+    ${CMAKE_SOURCE_DIR}/db/*.h
+    ${CMAKE_SOURCE_DIR}/helpers/*.h
+    ${CMAKE_SOURCE_DIR}/helpers/*.cc
     ${CMAKE_SOURCE_DIR}/port/*.cc
+    ${CMAKE_SOURCE_DIR}/port/*.h
     ${CMAKE_SOURCE_DIR}/table/*.cc
+    ${CMAKE_SOURCE_DIR}/table/*.h
     ${CMAKE_SOURCE_DIR}/util/*.cc
+    ${CMAKE_SOURCE_DIR}/util/*.h
     ${CMAKE_SOURCE_DIR}/include/leveldb/*.h
 )
 add_custom_target(format
