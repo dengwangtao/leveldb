@@ -23,7 +23,18 @@ int main()
 
     const std::string db_path = "testdb";
 
-    leveldb::Status status = leveldb::DB::Open(options, db_path, &db);
+    // 每次启动前删除旧数据库
+    leveldb::Status status = leveldb::DestroyDB(db_path, options);
+    if (!status.ok())
+    {
+        std::cerr << "destroy old db failed: " << status.ToString() << std::endl;
+        std::exit(1);
+    }
+
+    std::cout << "Old database has been destroyed.\n";
+
+    // 重新创建数据库
+    status = leveldb::DB::Open(options, db_path, &db);
     CheckStatus(status, "open db failed");
 
     std::cout << "Open database successfully.\n";
@@ -95,6 +106,11 @@ int main()
     for (it->Seek("user:1"); it->Valid() && it->key().ToString() < "user:5"; it->Next())
     {
         std::cout << it->key().ToString() << " => " << it->value().ToString() << "\n";
+    }
+
+    if (!it->status().ok())
+    {
+        std::cerr << "range iterator error: " << it->status().ToString() << "\n";
     }
 
     delete it;
