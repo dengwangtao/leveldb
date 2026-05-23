@@ -29,6 +29,19 @@ namespace leveldb
     // WriteBatch header has an 8-byte sequence number followed by a 4-byte count.
     static const size_t kHeader = 12;
 
+    // header:
+    // ╔═════════════════╦══════════════╗
+    // ║     8bytes      ║    4bytes    ║
+    // ╠═════════════════╬══════════════╣
+    // ║ sequence number ║    count     ║
+    // ╚═════════════════╩══════════════╝
+    // one record:
+    // ╔════════════════════╦══════════════╦═══════════════╦══════════════╦═════════════════╗
+    // ║       1bytes       ║    4bytes    ║ key len bytes ║    4bytes    ║ value len bytes ║
+    // ╠════════════════════╬══════════════╬═══════════════╬══════════════╬═════════════════╣
+    // ║ type(0:del, 1:val) ║   key len    ║   key data    ║  value len   ║   value data    ║
+    // ╚════════════════════╩══════════════╩═══════════════╩══════════════╩═════════════════╝
+
     WriteBatch::WriteBatch()
     {
         Clear();

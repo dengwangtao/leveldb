@@ -1,6 +1,7 @@
 #include <cassert>
 #include <iostream>
 #include <string>
+#include <chrono>
 
 #include "db.h"
 #include "write_batch.h"
@@ -14,6 +15,15 @@ void CheckStatus(const leveldb::Status& status, const std::string& msg)
     }
 }
 
+std::string NowString()
+{
+    auto now = std::chrono::system_clock::now();
+    auto time_t_now = std::chrono::system_clock::to_time_t(now);
+    char buf[20];
+    std::strftime(buf, sizeof(buf), "%Y-%m-%d %H:%M:%S", std::localtime(&time_t_now));
+    return std::string(buf);
+}
+
 int main()
 {
     leveldb::DB* db = nullptr;
@@ -23,30 +33,33 @@ int main()
 
     const std::string db_path = "testdb";
 
-    // 每次启动前删除旧数据库
-    leveldb::Status status = leveldb::DestroyDB(db_path, options);
-    if (!status.ok())
+    if (false)
     {
-        std::cerr << "destroy old db failed: " << status.ToString() << std::endl;
-        std::exit(1);
+        // 每次启动前删除旧数据库
+        leveldb::Status status = leveldb::DestroyDB(db_path, options);
+        if (!status.ok())
+        {
+            std::cerr << "destroy old db failed: " << status.ToString() << std::endl;
+            std::exit(1);
+        }
+
+        std::cout << "Old database has been destroyed.\n";
     }
 
-    std::cout << "Old database has been destroyed.\n";
-
     // 重新创建数据库
-    status = leveldb::DB::Open(options, db_path, &db);
+    leveldb::Status status = leveldb::DB::Open(options, db_path, &db);
     CheckStatus(status, "open db failed");
 
     std::cout << "Open database successfully.\n";
 
     // 1. Put：写入单个 key-value
-    status = db->Put(leveldb::WriteOptions(), "user:1", "Alice");
+    status = db->Put(leveldb::WriteOptions(), "user:1", std::string("Alice at ") + NowString());
     CheckStatus(status, "put user:1 failed");
 
-    status = db->Put(leveldb::WriteOptions(), "user:2", "Bob");
+    status = db->Put(leveldb::WriteOptions(), "user:2", std::string("Bob at ") + NowString());
     CheckStatus(status, "put user:2 failed");
 
-    status = db->Put(leveldb::WriteOptions(), "user:3", "Charlie");
+    status = db->Put(leveldb::WriteOptions(), "user:3", std::string("Charlie at ") + NowString());
     CheckStatus(status, "put user:3 failed");
 
     // 2. Get：读取 key
@@ -74,8 +87,8 @@ int main()
 
     // 4. WriteBatch：批量写入
     leveldb::WriteBatch batch;
-    batch.Put("user:4", "David");
-    batch.Put("user:5", "Eva");
+    batch.Put("user:4", std::string("David at ") + NowString());
+    batch.Put("user:5", std::string("Eva at ") + NowString());
     batch.Delete("user:3");
 
     status = db->Write(leveldb::WriteOptions(), &batch);
