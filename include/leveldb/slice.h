@@ -25,8 +25,8 @@
 namespace leveldb
 {
 
-    class LEVELDB_EXPORT Slice
-    {
+class LEVELDB_EXPORT Slice
+{
     public:
         // Create an empty slice.
         Slice() : data_(""), size_(0)
@@ -123,31 +123,31 @@ namespace leveldb
     private:
         const char* data_;
         size_t size_;
-    };
+};
 
-    inline bool operator==(const Slice& x, const Slice& y)
-    {
-        return ((x.size() == y.size()) && (memcmp(x.data(), y.data(), x.size()) == 0));
-    }
+inline bool operator==(const Slice& x, const Slice& y)
+{
+    return ((x.size() == y.size()) && (memcmp(x.data(), y.data(), x.size()) == 0));
+}
 
-    inline bool operator!=(const Slice& x, const Slice& y)
-    {
-        return !(x == y);
-    }
+inline bool operator!=(const Slice& x, const Slice& y)
+{
+    return !(x == y);
+}
 
-    inline int Slice::compare(const Slice& b) const
+inline int Slice::compare(const Slice& b) const
+{
+    const size_t min_len = (size_ < b.size_) ? size_ : b.size_;
+    int r = memcmp(data_, b.data_, min_len);
+    if (r == 0)
     {
-        const size_t min_len = (size_ < b.size_) ? size_ : b.size_;
-        int r = memcmp(data_, b.data_, min_len);
-        if (r == 0)
-        {
-            if (size_ < b.size_)
-                r = -1;
-            else if (size_ > b.size_)
-                r = +1;
-        }
-        return r;
+        if (size_ < b.size_)
+            r = -1;
+        else if (size_ > b.size_)
+            r = +1;
     }
+    return r;
+}
 
 } // namespace leveldb
 

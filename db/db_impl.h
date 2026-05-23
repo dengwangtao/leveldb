@@ -21,14 +21,14 @@
 namespace leveldb
 {
 
-    class MemTable;
-    class TableCache;
-    class Version;
-    class VersionEdit;
-    class VersionSet;
+class MemTable;
+class TableCache;
+class Version;
+class VersionEdit;
+class VersionSet;
 
-    class DBImpl : public DB
-    {
+class DBImpl : public DB
+{
     public:
         DBImpl(const Options& options, const std::string& dbname);
 
@@ -79,31 +79,31 @@ namespace leveldb
         // Information for a manual compaction
         struct ManualCompaction
         {
-            int level;
-            bool done;
-            const InternalKey* begin; // null means beginning of key range
-            const InternalKey* end;   // null means end of key range
-            InternalKey tmp_storage;  // Used to keep track of compaction progress
+                int level;
+                bool done;
+                const InternalKey* begin; // null means beginning of key range
+                const InternalKey* end;   // null means end of key range
+                InternalKey tmp_storage;  // Used to keep track of compaction progress
         };
 
         // Per level compaction stats.  stats_[level] stores the stats for
         // compactions that produced data for the specified "level".
         struct CompactionStats
         {
-            CompactionStats() : micros(0), bytes_read(0), bytes_written(0)
-            {
-            }
+                CompactionStats() : micros(0), bytes_read(0), bytes_written(0)
+                {
+                }
 
-            void Add(const CompactionStats& c)
-            {
-                this->micros += c.micros;
-                this->bytes_read += c.bytes_read;
-                this->bytes_written += c.bytes_written;
-            }
+                void Add(const CompactionStats& c)
+                {
+                    this->micros += c.micros;
+                    this->bytes_read += c.bytes_read;
+                    this->bytes_written += c.bytes_written;
+                }
 
-            int64_t micros;
-            int64_t bytes_read;
-            int64_t bytes_written;
+                int64_t micros;
+                int64_t bytes_read;
+                int64_t bytes_written;
         };
 
         Iterator* NewInternalIterator(const ReadOptions&, SequenceNumber* latest_snapshot, uint32_t* seed);
@@ -199,12 +199,12 @@ namespace leveldb
         Status bg_error_ GUARDED_BY(mutex_);
 
         CompactionStats stats_[config::kNumLevels] GUARDED_BY(mutex_);
-    };
+};
 
-    // Sanitize db options.  The caller should delete result.info_log if
-    // it is not equal to src.info_log.
-    Options SanitizeOptions(const std::string& db, const InternalKeyComparator* icmp,
-                            const InternalFilterPolicy* ipolicy, const Options& src);
+// Sanitize db options.  The caller should delete result.info_log if
+// it is not equal to src.info_log.
+Options SanitizeOptions(const std::string& db, const InternalKeyComparator* icmp, const InternalFilterPolicy* ipolicy,
+                        const Options& src);
 
 } // namespace leveldb
 

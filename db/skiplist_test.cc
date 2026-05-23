@@ -21,10 +21,10 @@
 namespace leveldb
 {
 
-    typedef uint64_t Key;
+typedef uint64_t Key;
 
-    struct Comparator
-    {
+struct Comparator
+{
         int operator()(const Key& a, const Key& b) const
         {
             if (a < b)
@@ -40,140 +40,140 @@ namespace leveldb
                 return 0;
             }
         }
-    };
+};
 
-    TEST(SkipTest, Empty)
+TEST(SkipTest, Empty)
+{
+    Arena arena;
+    Comparator cmp;
+    SkipList<Key, Comparator> list(cmp, &arena);
+    ASSERT_TRUE(!list.Contains(10));
+
+    SkipList<Key, Comparator>::Iterator iter(&list);
+    ASSERT_TRUE(!iter.Valid());
+    iter.SeekToFirst();
+    ASSERT_TRUE(!iter.Valid());
+    iter.Seek(100);
+    ASSERT_TRUE(!iter.Valid());
+    iter.SeekToLast();
+    ASSERT_TRUE(!iter.Valid());
+}
+
+TEST(SkipTest, InsertAndLookup)
+{
+    const int N = 2000;
+    const int R = 5000;
+    Random rnd(1000);
+    std::set<Key> keys;
+    Arena arena;
+    Comparator cmp;
+    SkipList<Key, Comparator> list(cmp, &arena);
+    for (int i = 0; i < N; i++)
     {
-        Arena arena;
-        Comparator cmp;
-        SkipList<Key, Comparator> list(cmp, &arena);
-        ASSERT_TRUE(!list.Contains(10));
-
-        SkipList<Key, Comparator>::Iterator iter(&list);
-        ASSERT_TRUE(!iter.Valid());
-        iter.SeekToFirst();
-        ASSERT_TRUE(!iter.Valid());
-        iter.Seek(100);
-        ASSERT_TRUE(!iter.Valid());
-        iter.SeekToLast();
-        ASSERT_TRUE(!iter.Valid());
+        Key key = rnd.Next() % R;
+        if (keys.insert(key).second)
+        {
+            list.Insert(key);
+        }
     }
 
-    TEST(SkipTest, InsertAndLookup)
+    for (int i = 0; i < R; i++)
     {
-        const int N = 2000;
-        const int R = 5000;
-        Random rnd(1000);
-        std::set<Key> keys;
-        Arena arena;
-        Comparator cmp;
-        SkipList<Key, Comparator> list(cmp, &arena);
-        for (int i = 0; i < N; i++)
+        if (list.Contains(i))
         {
-            Key key = rnd.Next() % R;
-            if (keys.insert(key).second)
-            {
-                list.Insert(key);
-            }
+            ASSERT_EQ(keys.count(i), 1);
         }
-
-        for (int i = 0; i < R; i++)
+        else
         {
-            if (list.Contains(i))
+            ASSERT_EQ(keys.count(i), 0);
+        }
+    }
+
+    // Simple iterator tests
+    {
+        SkipList<Key, Comparator>::Iterator iter(&list);
+        ASSERT_TRUE(!iter.Valid());
+
+        iter.Seek(0);
+        ASSERT_TRUE(iter.Valid());
+        ASSERT_EQ(*(keys.begin()), iter.key());
+
+        iter.SeekToFirst();
+        ASSERT_TRUE(iter.Valid());
+        ASSERT_EQ(*(keys.begin()), iter.key());
+
+        iter.SeekToLast();
+        ASSERT_TRUE(iter.Valid());
+        ASSERT_EQ(*(keys.rbegin()), iter.key());
+    }
+
+    // Forward iteration test
+    for (int i = 0; i < R; i++)
+    {
+        SkipList<Key, Comparator>::Iterator iter(&list);
+        iter.Seek(i);
+
+        // Compare against model iterator
+        std::set<Key>::iterator model_iter = keys.lower_bound(i);
+        for (int j = 0; j < 3; j++)
+        {
+            if (model_iter == keys.end())
             {
-                ASSERT_EQ(keys.count(i), 1);
+                ASSERT_TRUE(!iter.Valid());
+                break;
             }
             else
             {
-                ASSERT_EQ(keys.count(i), 0);
-            }
-        }
-
-        // Simple iterator tests
-        {
-            SkipList<Key, Comparator>::Iterator iter(&list);
-            ASSERT_TRUE(!iter.Valid());
-
-            iter.Seek(0);
-            ASSERT_TRUE(iter.Valid());
-            ASSERT_EQ(*(keys.begin()), iter.key());
-
-            iter.SeekToFirst();
-            ASSERT_TRUE(iter.Valid());
-            ASSERT_EQ(*(keys.begin()), iter.key());
-
-            iter.SeekToLast();
-            ASSERT_TRUE(iter.Valid());
-            ASSERT_EQ(*(keys.rbegin()), iter.key());
-        }
-
-        // Forward iteration test
-        for (int i = 0; i < R; i++)
-        {
-            SkipList<Key, Comparator>::Iterator iter(&list);
-            iter.Seek(i);
-
-            // Compare against model iterator
-            std::set<Key>::iterator model_iter = keys.lower_bound(i);
-            for (int j = 0; j < 3; j++)
-            {
-                if (model_iter == keys.end())
-                {
-                    ASSERT_TRUE(!iter.Valid());
-                    break;
-                }
-                else
-                {
-                    ASSERT_TRUE(iter.Valid());
-                    ASSERT_EQ(*model_iter, iter.key());
-                    ++model_iter;
-                    iter.Next();
-                }
-            }
-        }
-
-        // Backward iteration test
-        {
-            SkipList<Key, Comparator>::Iterator iter(&list);
-            iter.SeekToLast();
-
-            // Compare against model iterator
-            for (std::set<Key>::reverse_iterator model_iter = keys.rbegin(); model_iter != keys.rend(); ++model_iter)
-            {
                 ASSERT_TRUE(iter.Valid());
                 ASSERT_EQ(*model_iter, iter.key());
-                iter.Prev();
+                ++model_iter;
+                iter.Next();
             }
-            ASSERT_TRUE(!iter.Valid());
         }
     }
 
-    // We want to make sure that with a single writer and multiple
-    // concurrent readers (with no synchronization other than when a
-    // reader's iterator is created), the reader always observes all the
-    // data that was present in the skip list when the iterator was
-    // constructed.  Because insertions are happening concurrently, we may
-    // also observe new values that were inserted since the iterator was
-    // constructed, but we should never miss any values that were present
-    // at iterator construction time.
-    //
-    // We generate multi-part keys:
-    //     <key,gen,hash>
-    // where:
-    //     key is in range [0..K-1]
-    //     gen is a generation number for key
-    //     hash is hash(key,gen)
-    //
-    // The insertion code picks a random key, sets gen to be 1 + the last
-    // generation number inserted for that key, and sets hash to Hash(key,gen).
-    //
-    // At the beginning of a read, we snapshot the last inserted
-    // generation number for each key.  We then iterate, including random
-    // calls to Next() and Seek().  For every key we encounter, we
-    // check that it is either expected given the initial snapshot or has
-    // been concurrently added since the iterator started.
-    class ConcurrentTest
+    // Backward iteration test
     {
+        SkipList<Key, Comparator>::Iterator iter(&list);
+        iter.SeekToLast();
+
+        // Compare against model iterator
+        for (std::set<Key>::reverse_iterator model_iter = keys.rbegin(); model_iter != keys.rend(); ++model_iter)
+        {
+            ASSERT_TRUE(iter.Valid());
+            ASSERT_EQ(*model_iter, iter.key());
+            iter.Prev();
+        }
+        ASSERT_TRUE(!iter.Valid());
+    }
+}
+
+// We want to make sure that with a single writer and multiple
+// concurrent readers (with no synchronization other than when a
+// reader's iterator is created), the reader always observes all the
+// data that was present in the skip list when the iterator was
+// constructed.  Because insertions are happening concurrently, we may
+// also observe new values that were inserted since the iterator was
+// constructed, but we should never miss any values that were present
+// at iterator construction time.
+//
+// We generate multi-part keys:
+//     <key,gen,hash>
+// where:
+//     key is in range [0..K-1]
+//     gen is a generation number for key
+//     hash is hash(key,gen)
+//
+// The insertion code picks a random key, sets gen to be 1 + the last
+// generation number inserted for that key, and sets hash to Hash(key,gen).
+//
+// At the beginning of a read, we snapshot the last inserted
+// generation number for each key.  We then iterate, including random
+// calls to Next() and Seek().  For every key we encounter, we
+// check that it is either expected given the initial snapshot or has
+// been concurrently added since the iterator started.
+class ConcurrentTest
+{
     private:
         static constexpr uint32_t K = 4;
 
@@ -228,23 +228,23 @@ namespace leveldb
         // Per-key generation
         struct State
         {
-            std::atomic<int> generation[K];
-            void Set(int k, int v)
-            {
-                generation[k].store(v, std::memory_order_release);
-            }
-            int Get(int k)
-            {
-                return generation[k].load(std::memory_order_acquire);
-            }
-
-            State()
-            {
-                for (int k = 0; k < K; k++)
+                std::atomic<int> generation[K];
+                void Set(int k, int v)
                 {
-                    Set(k, 0);
+                    generation[k].store(v, std::memory_order_release);
                 }
-            }
+                int Get(int k)
+                {
+                    return generation[k].load(std::memory_order_acquire);
+                }
+
+                State()
+                {
+                    for (int k = 0; k < K; k++)
+                    {
+                        Set(k, 0);
+                    }
+                }
         };
 
         // Current state of the test
@@ -340,26 +340,26 @@ namespace leveldb
                 }
             }
         }
-    };
+};
 
-    // Needed when building in C++11 mode.
-    constexpr uint32_t ConcurrentTest::K;
+// Needed when building in C++11 mode.
+constexpr uint32_t ConcurrentTest::K;
 
-    // Simple test that does single-threaded testing of the ConcurrentTest
-    // scaffolding.
-    TEST(SkipTest, ConcurrentWithoutThreads)
+// Simple test that does single-threaded testing of the ConcurrentTest
+// scaffolding.
+TEST(SkipTest, ConcurrentWithoutThreads)
+{
+    ConcurrentTest test;
+    Random rnd(test::RandomSeed());
+    for (int i = 0; i < 10000; i++)
     {
-        ConcurrentTest test;
-        Random rnd(test::RandomSeed());
-        for (int i = 0; i < 10000; i++)
-        {
-            test.ReadStep(&rnd);
-            test.WriteStep(&rnd);
-        }
+        test.ReadStep(&rnd);
+        test.WriteStep(&rnd);
     }
+}
 
-    class TestState
-    {
+class TestState
+{
     public:
         ConcurrentTest t_;
         int seed_;
@@ -398,65 +398,65 @@ namespace leveldb
         port::Mutex mu_;
         ReaderState state_ GUARDED_BY(mu_);
         port::CondVar state_cv_ GUARDED_BY(mu_);
-    };
+};
 
-    static void ConcurrentReader(void* arg)
+static void ConcurrentReader(void* arg)
+{
+    TestState* state = reinterpret_cast<TestState*>(arg);
+    Random rnd(state->seed_);
+    int64_t reads = 0;
+    state->Change(TestState::RUNNING);
+    while (!state->quit_flag_.load(std::memory_order_acquire))
     {
-        TestState* state = reinterpret_cast<TestState*>(arg);
-        Random rnd(state->seed_);
-        int64_t reads = 0;
-        state->Change(TestState::RUNNING);
-        while (!state->quit_flag_.load(std::memory_order_acquire))
+        state->t_.ReadStep(&rnd);
+        ++reads;
+    }
+    state->Change(TestState::DONE);
+}
+
+static void RunConcurrent(int run)
+{
+    const int seed = test::RandomSeed() + (run * 100);
+    Random rnd(seed);
+    const int N = 1000;
+    const int kSize = 1000;
+    for (int i = 0; i < N; i++)
+    {
+        if ((i % 100) == 0)
         {
-            state->t_.ReadStep(&rnd);
-            ++reads;
+            std::fprintf(stderr, "Run %d of %d\n", i, N);
         }
-        state->Change(TestState::DONE);
-    }
-
-    static void RunConcurrent(int run)
-    {
-        const int seed = test::RandomSeed() + (run * 100);
-        Random rnd(seed);
-        const int N = 1000;
-        const int kSize = 1000;
-        for (int i = 0; i < N; i++)
+        TestState state(seed + 1);
+        Env::Default()->Schedule(ConcurrentReader, &state);
+        state.Wait(TestState::RUNNING);
+        for (int i = 0; i < kSize; i++)
         {
-            if ((i % 100) == 0)
-            {
-                std::fprintf(stderr, "Run %d of %d\n", i, N);
-            }
-            TestState state(seed + 1);
-            Env::Default()->Schedule(ConcurrentReader, &state);
-            state.Wait(TestState::RUNNING);
-            for (int i = 0; i < kSize; i++)
-            {
-                state.t_.WriteStep(&rnd);
-            }
-            state.quit_flag_.store(true, std::memory_order_release);
-            state.Wait(TestState::DONE);
+            state.t_.WriteStep(&rnd);
         }
+        state.quit_flag_.store(true, std::memory_order_release);
+        state.Wait(TestState::DONE);
     }
+}
 
-    TEST(SkipTest, Concurrent1)
-    {
-        RunConcurrent(1);
-    }
-    TEST(SkipTest, Concurrent2)
-    {
-        RunConcurrent(2);
-    }
-    TEST(SkipTest, Concurrent3)
-    {
-        RunConcurrent(3);
-    }
-    TEST(SkipTest, Concurrent4)
-    {
-        RunConcurrent(4);
-    }
-    TEST(SkipTest, Concurrent5)
-    {
-        RunConcurrent(5);
-    }
+TEST(SkipTest, Concurrent1)
+{
+    RunConcurrent(1);
+}
+TEST(SkipTest, Concurrent2)
+{
+    RunConcurrent(2);
+}
+TEST(SkipTest, Concurrent3)
+{
+    RunConcurrent(3);
+}
+TEST(SkipTest, Concurrent4)
+{
+    RunConcurrent(4);
+}
+TEST(SkipTest, Concurrent5)
+{
+    RunConcurrent(5);
+}
 
 } // namespace leveldb

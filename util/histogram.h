@@ -10,8 +10,8 @@
 namespace leveldb
 {
 
-    class Histogram
-    {
+class Histogram
+{
     public:
         Histogram()
         {
@@ -46,7 +46,7 @@ namespace leveldb
         double sum_squares_;
 
         double buckets_[kNumBuckets];
-    };
+};
 
 } // namespace leveldb
 

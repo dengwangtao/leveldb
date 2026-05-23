@@ -11,18 +11,18 @@
 namespace leveldb
 {
 
-    // Helper class that locks a mutex on construction and unlocks the mutex when
-    // the destructor of the MutexLock object is invoked.
-    //
-    // Typical usage:
-    //
-    //   void MyClass::MyMethod() {
-    //     MutexLock l(&mu_);       // mu_ is an instance variable
-    //     ... some complex code, possibly with multiple return paths ...
-    //   }
+// Helper class that locks a mutex on construction and unlocks the mutex when
+// the destructor of the MutexLock object is invoked.
+//
+// Typical usage:
+//
+//   void MyClass::MyMethod() {
+//     MutexLock l(&mu_);       // mu_ is an instance variable
+//     ... some complex code, possibly with multiple return paths ...
+//   }
 
-    class SCOPED_LOCKABLE MutexLock
-    {
+class SCOPED_LOCKABLE MutexLock
+{
     public:
         explicit MutexLock(port::Mutex* mu) EXCLUSIVE_LOCK_FUNCTION(mu) : mu_(mu)
         {
@@ -38,7 +38,7 @@ namespace leveldb
 
     private:
         port::Mutex* const mu_;
-    };
+};
 
 } // namespace leveldb
 

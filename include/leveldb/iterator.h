@@ -22,8 +22,8 @@
 namespace leveldb
 {
 
-    class LEVELDB_EXPORT Iterator
-    {
+class LEVELDB_EXPORT Iterator
+{
     public:
         Iterator();
 
@@ -87,32 +87,32 @@ namespace leveldb
         // The list's head node is inlined in the iterator.
         struct CleanupNode
         {
-            // True if the node is not used. Only head nodes might be unused.
-            bool IsEmpty() const
-            {
-                return function == nullptr;
-            }
-            // Invokes the cleanup function.
-            void Run()
-            {
-                assert(function != nullptr);
-                (*function)(arg1, arg2);
-            }
+                // True if the node is not used. Only head nodes might be unused.
+                bool IsEmpty() const
+                {
+                    return function == nullptr;
+                }
+                // Invokes the cleanup function.
+                void Run()
+                {
+                    assert(function != nullptr);
+                    (*function)(arg1, arg2);
+                }
 
-            // The head node is used if the function pointer is not null.
-            CleanupFunction function;
-            void* arg1;
-            void* arg2;
-            CleanupNode* next;
+                // The head node is used if the function pointer is not null.
+                CleanupFunction function;
+                void* arg1;
+                void* arg2;
+                CleanupNode* next;
         };
         CleanupNode cleanup_head_;
-    };
+};
 
-    // Return an empty iterator (yields nothing).
-    LEVELDB_EXPORT Iterator* NewEmptyIterator();
+// Return an empty iterator (yields nothing).
+LEVELDB_EXPORT Iterator* NewEmptyIterator();
 
-    // Return an empty iterator with the specified status.
-    LEVELDB_EXPORT Iterator* NewErrorIterator(const Status& status);
+// Return an empty iterator with the specified status.
+LEVELDB_EXPORT Iterator* NewErrorIterator(const Status& status);
 
 } // namespace leveldb
 

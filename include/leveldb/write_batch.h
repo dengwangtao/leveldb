@@ -29,17 +29,17 @@
 namespace leveldb
 {
 
-    class Slice;
+class Slice;
 
-    class LEVELDB_EXPORT WriteBatch
-    {
+class LEVELDB_EXPORT WriteBatch
+{
     public:
         class LEVELDB_EXPORT Handler
         {
-        public:
-            virtual ~Handler();
-            virtual void Put(const Slice& key, const Slice& value) = 0;
-            virtual void Delete(const Slice& key) = 0;
+            public:
+                virtual ~Handler();
+                virtual void Put(const Slice& key, const Slice& value) = 0;
+                virtual void Delete(const Slice& key) = 0;
         };
 
         WriteBatch();
@@ -79,7 +79,7 @@ namespace leveldb
         friend class WriteBatchInternal;
 
         std::string rep_; // See comment in write_batch.cc for the format of rep_
-    };
+};
 
 } // namespace leveldb
 

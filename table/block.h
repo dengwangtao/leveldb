@@ -13,11 +13,11 @@
 namespace leveldb
 {
 
-    struct BlockContents;
-    class Comparator;
+struct BlockContents;
+class Comparator;
 
-    class Block
-    {
+class Block
+{
     public:
         // Initialize the block with the specified contents.
         explicit Block(const BlockContents& contents);
@@ -42,7 +42,7 @@ namespace leveldb
         size_t size_;
         uint32_t restart_offset_; // Offset in data_ of restart array
         bool owned_;              // Block owns data_[]
-    };
+};
 
 } // namespace leveldb
 

@@ -12,14 +12,14 @@
 namespace leveldb
 {
 
-    class Slice;
+class Slice;
 
-    // A Comparator object provides a total order across slices that are
-    // used as keys in an sstable or a database.  A Comparator implementation
-    // must be thread-safe since leveldb may invoke its methods concurrently
-    // from multiple threads.
-    class LEVELDB_EXPORT Comparator
-    {
+// A Comparator object provides a total order across slices that are
+// used as keys in an sstable or a database.  A Comparator implementation
+// must be thread-safe since leveldb may invoke its methods concurrently
+// from multiple threads.
+class LEVELDB_EXPORT Comparator
+{
     public:
         virtual ~Comparator();
 
@@ -53,12 +53,12 @@ namespace leveldb
         // Simple comparator implementations may return with *key unchanged,
         // i.e., an implementation of this method that does nothing is correct.
         virtual void FindShortSuccessor(std::string* key) const = 0;
-    };
+};
 
-    // Return a builtin comparator that uses lexicographic byte-wise
-    // ordering.  The result remains the property of this module and
-    // must not be deleted.
-    LEVELDB_EXPORT const Comparator* BytewiseComparator();
+// Return a builtin comparator that uses lexicographic byte-wise
+// ordering.  The result remains the property of this module and
+// must not be deleted.
+LEVELDB_EXPORT const Comparator* BytewiseComparator();
 
 } // namespace leveldb
 

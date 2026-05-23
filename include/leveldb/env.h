@@ -42,15 +42,15 @@
 namespace leveldb
 {
 
-    class FileLock;
-    class Logger;
-    class RandomAccessFile;
-    class SequentialFile;
-    class Slice;
-    class WritableFile;
+class FileLock;
+class Logger;
+class RandomAccessFile;
+class SequentialFile;
+class Slice;
+class WritableFile;
 
-    class LEVELDB_EXPORT Env
-    {
+class LEVELDB_EXPORT Env
+{
     public:
         Env();
 
@@ -212,11 +212,11 @@ namespace leveldb
 
         // Sleep/delay the thread for the prescribed number of micro-seconds.
         virtual void SleepForMicroseconds(int micros) = 0;
-    };
+};
 
-    // A file abstraction for reading sequentially through a file
-    class LEVELDB_EXPORT SequentialFile
-    {
+// A file abstraction for reading sequentially through a file
+class LEVELDB_EXPORT SequentialFile
+{
     public:
         SequentialFile() = default;
 
@@ -243,11 +243,11 @@ namespace leveldb
         //
         // REQUIRES: External synchronization
         virtual Status Skip(uint64_t n) = 0;
-    };
+};
 
-    // A file abstraction for randomly reading the contents of a file.
-    class LEVELDB_EXPORT RandomAccessFile
-    {
+// A file abstraction for randomly reading the contents of a file.
+class LEVELDB_EXPORT RandomAccessFile
+{
     public:
         RandomAccessFile() = default;
 
@@ -266,13 +266,13 @@ namespace leveldb
         //
         // Safe for concurrent use by multiple threads.
         virtual Status Read(uint64_t offset, size_t n, Slice* result, char* scratch) const = 0;
-    };
+};
 
-    // A file abstraction for sequential writing.  The implementation
-    // must provide buffering since callers may append small fragments
-    // at a time to the file.
-    class LEVELDB_EXPORT WritableFile
-    {
+// A file abstraction for sequential writing.  The implementation
+// must provide buffering since callers may append small fragments
+// at a time to the file.
+class LEVELDB_EXPORT WritableFile
+{
     public:
         WritableFile() = default;
 
@@ -285,11 +285,11 @@ namespace leveldb
         virtual Status Close() = 0;
         virtual Status Flush() = 0;
         virtual Status Sync() = 0;
-    };
+};
 
-    // An interface for writing log messages.
-    class LEVELDB_EXPORT Logger
-    {
+// An interface for writing log messages.
+class LEVELDB_EXPORT Logger
+{
     public:
         Logger() = default;
 
@@ -300,11 +300,11 @@ namespace leveldb
 
         // Write an entry to the log file with the specified format.
         virtual void Logv(const char* format, std::va_list ap) = 0;
-    };
+};
 
-    // Identifies a locked file.
-    class LEVELDB_EXPORT FileLock
-    {
+// Identifies a locked file.
+class LEVELDB_EXPORT FileLock
+{
     public:
         FileLock() = default;
 
@@ -312,26 +312,26 @@ namespace leveldb
         FileLock& operator=(const FileLock&) = delete;
 
         virtual ~FileLock();
-    };
+};
 
-    // Log the specified data to *info_log if info_log is non-null.
-    void Log(Logger* info_log, const char* format, ...)
+// Log the specified data to *info_log if info_log is non-null.
+void Log(Logger* info_log, const char* format, ...)
 #if defined(__GNUC__) || defined(__clang__)
-        __attribute__((__format__(__printf__, 2, 3)))
+    __attribute__((__format__(__printf__, 2, 3)))
 #endif
-        ;
+    ;
 
-    // A utility routine: write "data" to the named file.
-    LEVELDB_EXPORT Status WriteStringToFile(Env* env, const Slice& data, const std::string& fname);
+// A utility routine: write "data" to the named file.
+LEVELDB_EXPORT Status WriteStringToFile(Env* env, const Slice& data, const std::string& fname);
 
-    // A utility routine: read contents of named file into *data
-    LEVELDB_EXPORT Status ReadFileToString(Env* env, const std::string& fname, std::string* data);
+// A utility routine: read contents of named file into *data
+LEVELDB_EXPORT Status ReadFileToString(Env* env, const std::string& fname, std::string* data);
 
-    // An implementation of Env that forwards all calls to another Env.
-    // May be useful to clients who wish to override just part of the
-    // functionality of another Env.
-    class LEVELDB_EXPORT EnvWrapper : public Env
-    {
+// An implementation of Env that forwards all calls to another Env.
+// May be useful to clients who wish to override just part of the
+// functionality of another Env.
+class LEVELDB_EXPORT EnvWrapper : public Env
+{
     public:
         // Initialize an EnvWrapper that delegates all calls to *t.
         explicit EnvWrapper(Env* t) : target_(t)
@@ -425,7 +425,7 @@ namespace leveldb
 
     private:
         Env* target_;
-    };
+};
 
 } // namespace leveldb
 

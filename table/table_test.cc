@@ -27,89 +27,89 @@
 namespace leveldb
 {
 
-    // Return reverse of "key".
-    // Used to test non-lexicographic comparators.
-    static std::string Reverse(const Slice& key)
+// Return reverse of "key".
+// Used to test non-lexicographic comparators.
+static std::string Reverse(const Slice& key)
+{
+    std::string str(key.ToString());
+    std::string rev("");
+    for (std::string::reverse_iterator rit = str.rbegin(); rit != str.rend(); ++rit)
     {
-        std::string str(key.ToString());
-        std::string rev("");
-        for (std::string::reverse_iterator rit = str.rbegin(); rit != str.rend(); ++rit)
-        {
-            rev.push_back(*rit);
-        }
-        return rev;
+        rev.push_back(*rit);
     }
+    return rev;
+}
 
-    namespace
-    {
-        class ReverseKeyComparator : public Comparator
+namespace
+{
+class ReverseKeyComparator : public Comparator
+{
+    public:
+        const char* Name() const override
         {
-        public:
-            const char* Name() const override
-            {
-                return "leveldb.ReverseBytewiseComparator";
-            }
-
-            int Compare(const Slice& a, const Slice& b) const override
-            {
-                return BytewiseComparator()->Compare(Reverse(a), Reverse(b));
-            }
-
-            void FindShortestSeparator(std::string* start, const Slice& limit) const override
-            {
-                std::string s = Reverse(*start);
-                std::string l = Reverse(limit);
-                BytewiseComparator()->FindShortestSeparator(&s, l);
-                *start = Reverse(s);
-            }
-
-            void FindShortSuccessor(std::string* key) const override
-            {
-                std::string s = Reverse(*key);
-                BytewiseComparator()->FindShortSuccessor(&s);
-                *key = Reverse(s);
-            }
-        };
-    } // namespace
-    static ReverseKeyComparator reverse_key_comparator;
-
-    static void Increment(const Comparator* cmp, std::string* key)
-    {
-        if (cmp == BytewiseComparator())
-        {
-            key->push_back('\0');
+            return "leveldb.ReverseBytewiseComparator";
         }
-        else
+
+        int Compare(const Slice& a, const Slice& b) const override
         {
-            assert(cmp == &reverse_key_comparator);
-            std::string rev = Reverse(*key);
-            rev.push_back('\0');
-            *key = Reverse(rev);
+            return BytewiseComparator()->Compare(Reverse(a), Reverse(b));
         }
+
+        void FindShortestSeparator(std::string* start, const Slice& limit) const override
+        {
+            std::string s = Reverse(*start);
+            std::string l = Reverse(limit);
+            BytewiseComparator()->FindShortestSeparator(&s, l);
+            *start = Reverse(s);
+        }
+
+        void FindShortSuccessor(std::string* key) const override
+        {
+            std::string s = Reverse(*key);
+            BytewiseComparator()->FindShortSuccessor(&s);
+            *key = Reverse(s);
+        }
+};
+} // namespace
+static ReverseKeyComparator reverse_key_comparator;
+
+static void Increment(const Comparator* cmp, std::string* key)
+{
+    if (cmp == BytewiseComparator())
+    {
+        key->push_back('\0');
     }
-
-    // An STL comparator that uses a Comparator
-    namespace
+    else
     {
-        struct STLLessThan
+        assert(cmp == &reverse_key_comparator);
+        std::string rev = Reverse(*key);
+        rev.push_back('\0');
+        *key = Reverse(rev);
+    }
+}
+
+// An STL comparator that uses a Comparator
+namespace
+{
+struct STLLessThan
+{
+        const Comparator* cmp;
+
+        STLLessThan() : cmp(BytewiseComparator())
         {
-            const Comparator* cmp;
+        }
+        STLLessThan(const Comparator* c) : cmp(c)
+        {
+        }
+        bool operator()(const std::string& a, const std::string& b) const
+        {
+            return cmp->Compare(Slice(a), Slice(b)) < 0;
+        }
+};
+} // namespace
 
-            STLLessThan() : cmp(BytewiseComparator())
-            {
-            }
-            STLLessThan(const Comparator* c) : cmp(c)
-            {
-            }
-            bool operator()(const std::string& a, const std::string& b) const
-            {
-                return cmp->Compare(Slice(a), Slice(b)) < 0;
-            }
-        };
-    } // namespace
-
-    class StringSink : public WritableFile
-    {
+class StringSink : public WritableFile
+{
     public:
         ~StringSink() override = default;
 
@@ -139,10 +139,10 @@ namespace leveldb
 
     private:
         std::string contents_;
-    };
+};
 
-    class StringSource : public RandomAccessFile
-    {
+class StringSource : public RandomAccessFile
+{
     public:
         StringSource(const Slice& contents) : contents_(contents.data(), contents.size())
         {
@@ -172,14 +172,14 @@ namespace leveldb
 
     private:
         std::string contents_;
-    };
+};
 
-    typedef std::map<std::string, std::string, STLLessThan> KVMap;
+typedef std::map<std::string, std::string, STLLessThan> KVMap;
 
-    // Helper class for tests to unify the interface between
-    // BlockBuilder/TableBuilder and Block/Table.
-    class Constructor
-    {
+// Helper class for tests to unify the interface between
+// BlockBuilder/TableBuilder and Block/Table.
+class Constructor
+{
     public:
         explicit Constructor(const Comparator* cmp) : data_(STLLessThan(cmp))
         {
@@ -224,10 +224,10 @@ namespace leveldb
 
     private:
         KVMap data_;
-    };
+};
 
-    class BlockConstructor : public Constructor
-    {
+class BlockConstructor : public Constructor
+{
     public:
         explicit BlockConstructor(const Comparator* cmp) : Constructor(cmp), comparator_(cmp), block_(nullptr)
         {
@@ -266,10 +266,10 @@ namespace leveldb
         Block* block_;
 
         BlockConstructor();
-    };
+};
 
-    class TableConstructor : public Constructor
-    {
+class TableConstructor : public Constructor
+{
     public:
         TableConstructor(const Comparator* cmp) : Constructor(cmp), source_(nullptr), table_(nullptr)
         {
@@ -324,11 +324,11 @@ namespace leveldb
         Table* table_;
 
         TableConstructor();
-    };
+};
 
-    // A helper class that converts internal format keys into user keys
-    class KeyConvertingIterator : public Iterator
-    {
+// A helper class that converts internal format keys into user keys
+class KeyConvertingIterator : public Iterator
+{
     public:
         explicit KeyConvertingIterator(Iterator* iter) : iter_(iter)
         {
@@ -394,10 +394,10 @@ namespace leveldb
     private:
         mutable Status status_;
         Iterator* iter_;
-    };
+};
 
-    class MemTableConstructor : public Constructor
-    {
+class MemTableConstructor : public Constructor
+{
     public:
         explicit MemTableConstructor(const Comparator* cmp) : Constructor(cmp), internal_comparator_(cmp)
         {
@@ -429,10 +429,10 @@ namespace leveldb
     private:
         const InternalKeyComparator internal_comparator_;
         MemTable* memtable_;
-    };
+};
 
-    class DBConstructor : public Constructor
-    {
+class DBConstructor : public Constructor
+{
     public:
         explicit DBConstructor(const Comparator* cmp) : Constructor(cmp), comparator_(cmp)
         {
@@ -485,50 +485,50 @@ namespace leveldb
 
         const Comparator* const comparator_;
         DB* db_;
-    };
+};
 
-    enum TestType
-    {
-        TABLE_TEST,
-        BLOCK_TEST,
-        MEMTABLE_TEST,
-        DB_TEST
-    };
+enum TestType
+{
+    TABLE_TEST,
+    BLOCK_TEST,
+    MEMTABLE_TEST,
+    DB_TEST
+};
 
-    struct TestArgs
-    {
+struct TestArgs
+{
         TestType type;
         bool reverse_compare;
         int restart_interval;
-    };
+};
 
-    static const TestArgs kTestArgList[] = {
-        {TABLE_TEST, false, 16},
-        {TABLE_TEST, false, 1},
-        {TABLE_TEST, false, 1024},
-        {TABLE_TEST, true, 16},
-        {TABLE_TEST, true, 1},
-        {TABLE_TEST, true, 1024},
+static const TestArgs kTestArgList[] = {
+    {TABLE_TEST, false, 16},
+    {TABLE_TEST, false, 1},
+    {TABLE_TEST, false, 1024},
+    {TABLE_TEST, true, 16},
+    {TABLE_TEST, true, 1},
+    {TABLE_TEST, true, 1024},
 
-        {BLOCK_TEST, false, 16},
-        {BLOCK_TEST, false, 1},
-        {BLOCK_TEST, false, 1024},
-        {BLOCK_TEST, true, 16},
-        {BLOCK_TEST, true, 1},
-        {BLOCK_TEST, true, 1024},
+    {BLOCK_TEST, false, 16},
+    {BLOCK_TEST, false, 1},
+    {BLOCK_TEST, false, 1024},
+    {BLOCK_TEST, true, 16},
+    {BLOCK_TEST, true, 1},
+    {BLOCK_TEST, true, 1024},
 
-        // Restart interval does not matter for memtables
-        {MEMTABLE_TEST, false, 16},
-        {MEMTABLE_TEST, true, 16},
+    // Restart interval does not matter for memtables
+    {MEMTABLE_TEST, false, 16},
+    {MEMTABLE_TEST, true, 16},
 
-        // Do not bother with restart interval variations for DB
-        {DB_TEST, false, 16},
-        {DB_TEST, true, 16},
-    };
-    static const int kNumTestArgs = sizeof(kTestArgList) / sizeof(kTestArgList[0]);
+    // Do not bother with restart interval variations for DB
+    {DB_TEST, false, 16},
+    {DB_TEST, true, 16},
+};
+static const int kNumTestArgs = sizeof(kTestArgList) / sizeof(kTestArgList[0]);
 
-    class Harness : public testing::Test
-    {
+class Harness : public testing::Test
+{
     public:
         Harness() : constructor_(nullptr)
         {
@@ -783,261 +783,260 @@ namespace leveldb
     private:
         Options options_;
         Constructor* constructor_;
-    };
+};
 
-    // Test empty table/block.
-    TEST_F(Harness, Empty)
+// Test empty table/block.
+TEST_F(Harness, Empty)
+{
+    for (int i = 0; i < kNumTestArgs; i++)
     {
-        for (int i = 0; i < kNumTestArgs; i++)
-        {
-            Init(kTestArgList[i]);
-            Random rnd(test::RandomSeed() + 1);
-            Test(&rnd);
-        }
-    }
-
-    // Special test for a block with no restart entries.  The C++ leveldb
-    // code never generates such blocks, but the Java version of leveldb
-    // seems to.
-    TEST_F(Harness, ZeroRestartPointsInBlock)
-    {
-        char data[sizeof(uint32_t)];
-        memset(data, 0, sizeof(data));
-        BlockContents contents;
-        contents.data = Slice(data, sizeof(data));
-        contents.cachable = false;
-        contents.heap_allocated = false;
-        Block block(contents);
-        Iterator* iter = block.NewIterator(BytewiseComparator());
-        iter->SeekToFirst();
-        ASSERT_TRUE(!iter->Valid());
-        iter->SeekToLast();
-        ASSERT_TRUE(!iter->Valid());
-        iter->Seek("foo");
-        ASSERT_TRUE(!iter->Valid());
-        delete iter;
-    }
-
-    // Test the empty key
-    TEST_F(Harness, SimpleEmptyKey)
-    {
-        for (int i = 0; i < kNumTestArgs; i++)
-        {
-            Init(kTestArgList[i]);
-            Random rnd(test::RandomSeed() + 1);
-            Add("", "v");
-            Test(&rnd);
-        }
-    }
-
-    TEST_F(Harness, SimpleSingle)
-    {
-        for (int i = 0; i < kNumTestArgs; i++)
-        {
-            Init(kTestArgList[i]);
-            Random rnd(test::RandomSeed() + 2);
-            Add("abc", "v");
-            Test(&rnd);
-        }
-    }
-
-    TEST_F(Harness, SimpleMulti)
-    {
-        for (int i = 0; i < kNumTestArgs; i++)
-        {
-            Init(kTestArgList[i]);
-            Random rnd(test::RandomSeed() + 3);
-            Add("abc", "v");
-            Add("abcd", "v");
-            Add("ac", "v2");
-            Test(&rnd);
-        }
-    }
-
-    TEST_F(Harness, SimpleSpecialKey)
-    {
-        for (int i = 0; i < kNumTestArgs; i++)
-        {
-            Init(kTestArgList[i]);
-            Random rnd(test::RandomSeed() + 4);
-            Add("\xff\xff", "v3");
-            Test(&rnd);
-        }
-    }
-
-    TEST_F(Harness, Randomized)
-    {
-        for (int i = 0; i < kNumTestArgs; i++)
-        {
-            Init(kTestArgList[i]);
-            Random rnd(test::RandomSeed() + 5);
-            for (int num_entries = 0; num_entries < 2000; num_entries += (num_entries < 50 ? 1 : 200))
-            {
-                if ((num_entries % 10) == 0)
-                {
-                    std::fprintf(stderr, "case %d of %d: num_entries = %d\n", (i + 1), int(kNumTestArgs), num_entries);
-                }
-                for (int e = 0; e < num_entries; e++)
-                {
-                    std::string v;
-                    Add(test::RandomKey(&rnd, rnd.Skewed(4)), test::RandomString(&rnd, rnd.Skewed(5), &v).ToString());
-                }
-                Test(&rnd);
-            }
-        }
-    }
-
-    TEST_F(Harness, RandomizedLongDB)
-    {
-        Random rnd(test::RandomSeed());
-        TestArgs args = {DB_TEST, false, 16};
-        Init(args);
-        int num_entries = 100000;
-        for (int e = 0; e < num_entries; e++)
-        {
-            std::string v;
-            Add(test::RandomKey(&rnd, rnd.Skewed(4)), test::RandomString(&rnd, rnd.Skewed(5), &v).ToString());
-        }
+        Init(kTestArgList[i]);
+        Random rnd(test::RandomSeed() + 1);
         Test(&rnd);
+    }
+}
 
-        // We must have created enough data to force merging
-        int files = 0;
-        for (int level = 0; level < config::kNumLevels; level++)
+// Special test for a block with no restart entries.  The C++ leveldb
+// code never generates such blocks, but the Java version of leveldb
+// seems to.
+TEST_F(Harness, ZeroRestartPointsInBlock)
+{
+    char data[sizeof(uint32_t)];
+    memset(data, 0, sizeof(data));
+    BlockContents contents;
+    contents.data = Slice(data, sizeof(data));
+    contents.cachable = false;
+    contents.heap_allocated = false;
+    Block block(contents);
+    Iterator* iter = block.NewIterator(BytewiseComparator());
+    iter->SeekToFirst();
+    ASSERT_TRUE(!iter->Valid());
+    iter->SeekToLast();
+    ASSERT_TRUE(!iter->Valid());
+    iter->Seek("foo");
+    ASSERT_TRUE(!iter->Valid());
+    delete iter;
+}
+
+// Test the empty key
+TEST_F(Harness, SimpleEmptyKey)
+{
+    for (int i = 0; i < kNumTestArgs; i++)
+    {
+        Init(kTestArgList[i]);
+        Random rnd(test::RandomSeed() + 1);
+        Add("", "v");
+        Test(&rnd);
+    }
+}
+
+TEST_F(Harness, SimpleSingle)
+{
+    for (int i = 0; i < kNumTestArgs; i++)
+    {
+        Init(kTestArgList[i]);
+        Random rnd(test::RandomSeed() + 2);
+        Add("abc", "v");
+        Test(&rnd);
+    }
+}
+
+TEST_F(Harness, SimpleMulti)
+{
+    for (int i = 0; i < kNumTestArgs; i++)
+    {
+        Init(kTestArgList[i]);
+        Random rnd(test::RandomSeed() + 3);
+        Add("abc", "v");
+        Add("abcd", "v");
+        Add("ac", "v2");
+        Test(&rnd);
+    }
+}
+
+TEST_F(Harness, SimpleSpecialKey)
+{
+    for (int i = 0; i < kNumTestArgs; i++)
+    {
+        Init(kTestArgList[i]);
+        Random rnd(test::RandomSeed() + 4);
+        Add("\xff\xff", "v3");
+        Test(&rnd);
+    }
+}
+
+TEST_F(Harness, Randomized)
+{
+    for (int i = 0; i < kNumTestArgs; i++)
+    {
+        Init(kTestArgList[i]);
+        Random rnd(test::RandomSeed() + 5);
+        for (int num_entries = 0; num_entries < 2000; num_entries += (num_entries < 50 ? 1 : 200))
         {
-            std::string value;
-            char name[100];
-            std::snprintf(name, sizeof(name), "leveldb.num-files-at-level%d", level);
-            ASSERT_TRUE(db()->GetProperty(name, &value));
-            files += atoi(value.c_str());
+            if ((num_entries % 10) == 0)
+            {
+                std::fprintf(stderr, "case %d of %d: num_entries = %d\n", (i + 1), int(kNumTestArgs), num_entries);
+            }
+            for (int e = 0; e < num_entries; e++)
+            {
+                std::string v;
+                Add(test::RandomKey(&rnd, rnd.Skewed(4)), test::RandomString(&rnd, rnd.Skewed(5), &v).ToString());
+            }
+            Test(&rnd);
         }
-        ASSERT_GT(files, 0);
+    }
+}
+
+TEST_F(Harness, RandomizedLongDB)
+{
+    Random rnd(test::RandomSeed());
+    TestArgs args = {DB_TEST, false, 16};
+    Init(args);
+    int num_entries = 100000;
+    for (int e = 0; e < num_entries; e++)
+    {
+        std::string v;
+        Add(test::RandomKey(&rnd, rnd.Skewed(4)), test::RandomString(&rnd, rnd.Skewed(5), &v).ToString());
+    }
+    Test(&rnd);
+
+    // We must have created enough data to force merging
+    int files = 0;
+    for (int level = 0; level < config::kNumLevels; level++)
+    {
+        std::string value;
+        char name[100];
+        std::snprintf(name, sizeof(name), "leveldb.num-files-at-level%d", level);
+        ASSERT_TRUE(db()->GetProperty(name, &value));
+        files += atoi(value.c_str());
+    }
+    ASSERT_GT(files, 0);
+}
+
+TEST(MemTableTest, Simple)
+{
+    InternalKeyComparator cmp(BytewiseComparator());
+    MemTable* memtable = new MemTable(cmp);
+    memtable->Ref();
+    WriteBatch batch;
+    WriteBatchInternal::SetSequence(&batch, 100);
+    batch.Put(std::string("k1"), std::string("v1"));
+    batch.Put(std::string("k2"), std::string("v2"));
+    batch.Put(std::string("k3"), std::string("v3"));
+    batch.Put(std::string("largekey"), std::string("vlarge"));
+    ASSERT_TRUE(WriteBatchInternal::InsertInto(&batch, memtable).ok());
+
+    Iterator* iter = memtable->NewIterator();
+    iter->SeekToFirst();
+    while (iter->Valid())
+    {
+        std::fprintf(stderr, "key: '%s' -> '%s'\n", iter->key().ToString().c_str(), iter->value().ToString().c_str());
+        iter->Next();
     }
 
-    TEST(MemTableTest, Simple)
+    delete iter;
+    memtable->Unref();
+}
+
+static bool Between(uint64_t val, uint64_t low, uint64_t high)
+{
+    bool result = (val >= low) && (val <= high);
+    if (!result)
     {
-        InternalKeyComparator cmp(BytewiseComparator());
-        MemTable* memtable = new MemTable(cmp);
-        memtable->Ref();
-        WriteBatch batch;
-        WriteBatchInternal::SetSequence(&batch, 100);
-        batch.Put(std::string("k1"), std::string("v1"));
-        batch.Put(std::string("k2"), std::string("v2"));
-        batch.Put(std::string("k3"), std::string("v3"));
-        batch.Put(std::string("largekey"), std::string("vlarge"));
-        ASSERT_TRUE(WriteBatchInternal::InsertInto(&batch, memtable).ok());
+        std::fprintf(stderr, "Value %llu is not in range [%llu, %llu]\n", (unsigned long long)(val),
+                     (unsigned long long)(low), (unsigned long long)(high));
+    }
+    return result;
+}
 
-        Iterator* iter = memtable->NewIterator();
-        iter->SeekToFirst();
-        while (iter->Valid())
-        {
-            std::fprintf(stderr, "key: '%s' -> '%s'\n", iter->key().ToString().c_str(),
-                         iter->value().ToString().c_str());
-            iter->Next();
-        }
+TEST(TableTest, ApproximateOffsetOfPlain)
+{
+    TableConstructor c(BytewiseComparator());
+    c.Add("k01", "hello");
+    c.Add("k02", "hello2");
+    c.Add("k03", std::string(10000, 'x'));
+    c.Add("k04", std::string(200000, 'x'));
+    c.Add("k05", std::string(300000, 'x'));
+    c.Add("k06", "hello3");
+    c.Add("k07", std::string(100000, 'x'));
+    std::vector<std::string> keys;
+    KVMap kvmap;
+    Options options;
+    options.block_size = 1024;
+    options.compression = kNoCompression;
+    c.Finish(options, &keys, &kvmap);
 
-        delete iter;
-        memtable->Unref();
+    ASSERT_TRUE(Between(c.ApproximateOffsetOf("abc"), 0, 0));
+    ASSERT_TRUE(Between(c.ApproximateOffsetOf("k01"), 0, 0));
+    ASSERT_TRUE(Between(c.ApproximateOffsetOf("k01a"), 0, 0));
+    ASSERT_TRUE(Between(c.ApproximateOffsetOf("k02"), 0, 0));
+    ASSERT_TRUE(Between(c.ApproximateOffsetOf("k03"), 0, 0));
+    ASSERT_TRUE(Between(c.ApproximateOffsetOf("k04"), 10000, 11000));
+    ASSERT_TRUE(Between(c.ApproximateOffsetOf("k04a"), 210000, 211000));
+    ASSERT_TRUE(Between(c.ApproximateOffsetOf("k05"), 210000, 211000));
+    ASSERT_TRUE(Between(c.ApproximateOffsetOf("k06"), 510000, 511000));
+    ASSERT_TRUE(Between(c.ApproximateOffsetOf("k07"), 510000, 511000));
+    ASSERT_TRUE(Between(c.ApproximateOffsetOf("xyz"), 610000, 612000));
+}
+
+static bool CompressionSupported(CompressionType type)
+{
+    std::string out;
+    Slice in = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
+    if (type == kSnappyCompression)
+    {
+        return port::Snappy_Compress(in.data(), in.size(), &out);
+    }
+    else if (type == kZstdCompression)
+    {
+        return port::Zstd_Compress(/*level=*/1, in.data(), in.size(), &out);
+    }
+    return false;
+}
+
+class CompressionTableTest : public ::testing::TestWithParam<std::tuple<CompressionType>>
+{
+};
+
+INSTANTIATE_TEST_SUITE_P(CompressionTests, CompressionTableTest,
+                         ::testing::Values(kSnappyCompression, kZstdCompression));
+
+TEST_P(CompressionTableTest, ApproximateOffsetOfCompressed)
+{
+    CompressionType type = ::testing::get<0>(GetParam());
+    if (!CompressionSupported(type))
+    {
+        GTEST_SKIP() << "skipping compression test: " << type;
     }
 
-    static bool Between(uint64_t val, uint64_t low, uint64_t high)
-    {
-        bool result = (val >= low) && (val <= high);
-        if (!result)
-        {
-            std::fprintf(stderr, "Value %llu is not in range [%llu, %llu]\n", (unsigned long long)(val),
-                         (unsigned long long)(low), (unsigned long long)(high));
-        }
-        return result;
-    }
+    Random rnd(301);
+    TableConstructor c(BytewiseComparator());
+    std::string tmp;
+    c.Add("k01", "hello");
+    c.Add("k02", test::CompressibleString(&rnd, 0.25, 10000, &tmp));
+    c.Add("k03", "hello3");
+    c.Add("k04", test::CompressibleString(&rnd, 0.25, 10000, &tmp));
+    std::vector<std::string> keys;
+    KVMap kvmap;
+    Options options;
+    options.block_size = 1024;
+    options.compression = type;
+    c.Finish(options, &keys, &kvmap);
 
-    TEST(TableTest, ApproximateOffsetOfPlain)
-    {
-        TableConstructor c(BytewiseComparator());
-        c.Add("k01", "hello");
-        c.Add("k02", "hello2");
-        c.Add("k03", std::string(10000, 'x'));
-        c.Add("k04", std::string(200000, 'x'));
-        c.Add("k05", std::string(300000, 'x'));
-        c.Add("k06", "hello3");
-        c.Add("k07", std::string(100000, 'x'));
-        std::vector<std::string> keys;
-        KVMap kvmap;
-        Options options;
-        options.block_size = 1024;
-        options.compression = kNoCompression;
-        c.Finish(options, &keys, &kvmap);
+    // Expected upper and lower bounds of space used by compressible strings.
+    static const int kSlop = 1000; // Compressor effectiveness varies.
+    const int expected = 2500;     // 10000 * compression ratio (0.25)
+    const int min_z = expected - kSlop;
+    const int max_z = expected + kSlop;
 
-        ASSERT_TRUE(Between(c.ApproximateOffsetOf("abc"), 0, 0));
-        ASSERT_TRUE(Between(c.ApproximateOffsetOf("k01"), 0, 0));
-        ASSERT_TRUE(Between(c.ApproximateOffsetOf("k01a"), 0, 0));
-        ASSERT_TRUE(Between(c.ApproximateOffsetOf("k02"), 0, 0));
-        ASSERT_TRUE(Between(c.ApproximateOffsetOf("k03"), 0, 0));
-        ASSERT_TRUE(Between(c.ApproximateOffsetOf("k04"), 10000, 11000));
-        ASSERT_TRUE(Between(c.ApproximateOffsetOf("k04a"), 210000, 211000));
-        ASSERT_TRUE(Between(c.ApproximateOffsetOf("k05"), 210000, 211000));
-        ASSERT_TRUE(Between(c.ApproximateOffsetOf("k06"), 510000, 511000));
-        ASSERT_TRUE(Between(c.ApproximateOffsetOf("k07"), 510000, 511000));
-        ASSERT_TRUE(Between(c.ApproximateOffsetOf("xyz"), 610000, 612000));
-    }
-
-    static bool CompressionSupported(CompressionType type)
-    {
-        std::string out;
-        Slice in = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
-        if (type == kSnappyCompression)
-        {
-            return port::Snappy_Compress(in.data(), in.size(), &out);
-        }
-        else if (type == kZstdCompression)
-        {
-            return port::Zstd_Compress(/*level=*/1, in.data(), in.size(), &out);
-        }
-        return false;
-    }
-
-    class CompressionTableTest : public ::testing::TestWithParam<std::tuple<CompressionType>>
-    {
-    };
-
-    INSTANTIATE_TEST_SUITE_P(CompressionTests, CompressionTableTest,
-                             ::testing::Values(kSnappyCompression, kZstdCompression));
-
-    TEST_P(CompressionTableTest, ApproximateOffsetOfCompressed)
-    {
-        CompressionType type = ::testing::get<0>(GetParam());
-        if (!CompressionSupported(type))
-        {
-            GTEST_SKIP() << "skipping compression test: " << type;
-        }
-
-        Random rnd(301);
-        TableConstructor c(BytewiseComparator());
-        std::string tmp;
-        c.Add("k01", "hello");
-        c.Add("k02", test::CompressibleString(&rnd, 0.25, 10000, &tmp));
-        c.Add("k03", "hello3");
-        c.Add("k04", test::CompressibleString(&rnd, 0.25, 10000, &tmp));
-        std::vector<std::string> keys;
-        KVMap kvmap;
-        Options options;
-        options.block_size = 1024;
-        options.compression = type;
-        c.Finish(options, &keys, &kvmap);
-
-        // Expected upper and lower bounds of space used by compressible strings.
-        static const int kSlop = 1000; // Compressor effectiveness varies.
-        const int expected = 2500;     // 10000 * compression ratio (0.25)
-        const int min_z = expected - kSlop;
-        const int max_z = expected + kSlop;
-
-        ASSERT_TRUE(Between(c.ApproximateOffsetOf("abc"), 0, kSlop));
-        ASSERT_TRUE(Between(c.ApproximateOffsetOf("k01"), 0, kSlop));
-        ASSERT_TRUE(Between(c.ApproximateOffsetOf("k02"), 0, kSlop));
-        // Have now emitted a large compressible string, so adjust expected offset.
-        ASSERT_TRUE(Between(c.ApproximateOffsetOf("k03"), min_z, max_z));
-        ASSERT_TRUE(Between(c.ApproximateOffsetOf("k04"), min_z, max_z));
-        // Have now emitted two large compressible strings, so adjust expected offset.
-        ASSERT_TRUE(Between(c.ApproximateOffsetOf("xyz"), 2 * min_z, 2 * max_z));
-    }
+    ASSERT_TRUE(Between(c.ApproximateOffsetOf("abc"), 0, kSlop));
+    ASSERT_TRUE(Between(c.ApproximateOffsetOf("k01"), 0, kSlop));
+    ASSERT_TRUE(Between(c.ApproximateOffsetOf("k02"), 0, kSlop));
+    // Have now emitted a large compressible string, so adjust expected offset.
+    ASSERT_TRUE(Between(c.ApproximateOffsetOf("k03"), min_z, max_z));
+    ASSERT_TRUE(Between(c.ApproximateOffsetOf("k04"), min_z, max_z));
+    // Have now emitted two large compressible strings, so adjust expected offset.
+    ASSERT_TRUE(Between(c.ApproximateOffsetOf("xyz"), 2 * min_z, 2 * max_z));
+}
 
 } // namespace leveldb

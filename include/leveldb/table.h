@@ -13,19 +13,19 @@
 namespace leveldb
 {
 
-    class Block;
-    class BlockHandle;
-    class Footer;
-    struct Options;
-    class RandomAccessFile;
-    struct ReadOptions;
-    class TableCache;
+class Block;
+class BlockHandle;
+class Footer;
+struct Options;
+class RandomAccessFile;
+struct ReadOptions;
+class TableCache;
 
-    // A Table is a sorted map from strings to strings.  Tables are
-    // immutable and persistent.  A Table may be safely accessed from
-    // multiple threads without external synchronization.
-    class LEVELDB_EXPORT Table
-    {
+// A Table is a sorted map from strings to strings.  Tables are
+// immutable and persistent.  A Table may be safely accessed from
+// multiple threads without external synchronization.
+class LEVELDB_EXPORT Table
+{
     public:
         // Attempt to open the table that is stored in bytes [0..file_size)
         // of "file", and read the metadata entries necessary to allow
@@ -79,7 +79,7 @@ namespace leveldb
         void ReadFilter(const Slice& filter_handle_value);
 
         Rep* const rep_;
-    };
+};
 
 } // namespace leveldb
 

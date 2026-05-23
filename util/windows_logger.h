@@ -19,8 +19,8 @@
 namespace leveldb
 {
 
-    class WindowsLogger final : public Logger
-    {
+class WindowsLogger final : public Logger
+{
     public:
         // Creates a logger that writes to the given file.
         //
@@ -127,7 +127,7 @@ namespace leveldb
 
     private:
         std::FILE* const fp_;
-    };
+};
 
 } // namespace leveldb
 

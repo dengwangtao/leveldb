@@ -22,12 +22,12 @@
 namespace leveldb
 {
 
-    class BlockBuilder;
-    class BlockHandle;
-    class WritableFile;
+class BlockBuilder;
+class BlockHandle;
+class WritableFile;
 
-    class LEVELDB_EXPORT TableBuilder
-    {
+class LEVELDB_EXPORT TableBuilder
+{
     public:
         // Create a builder that will store the contents of the table it is
         // building in *file.  Does not close the file.  It is up to the
@@ -91,7 +91,7 @@ namespace leveldb
 
         struct Rep;
         Rep* rep_;
-    };
+};
 
 } // namespace leveldb
 

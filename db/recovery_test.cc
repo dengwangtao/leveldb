@@ -19,8 +19,8 @@
 namespace leveldb
 {
 
-    class RecoveryTest : public testing::Test
-    {
+class RecoveryTest : public testing::Test
+{
     public:
         RecoveryTest() : env_(Env::Default()), db_(nullptr)
         {
@@ -209,200 +209,200 @@ namespace leveldb
         std::string dbname_;
         Env* env_;
         DB* db_;
-    };
+};
 
-    TEST_F(RecoveryTest, ManifestReused)
+TEST_F(RecoveryTest, ManifestReused)
+{
+    if (!CanAppend())
     {
-        if (!CanAppend())
-        {
-            std::fprintf(stderr, "skipping test because env does not support appending\n");
-            return;
-        }
+        std::fprintf(stderr, "skipping test because env does not support appending\n");
+        return;
+    }
+    ASSERT_LEVELDB_OK(Put("foo", "bar"));
+    Close();
+    std::string old_manifest = ManifestFileName();
+    Open();
+    ASSERT_EQ(old_manifest, ManifestFileName());
+    ASSERT_EQ("bar", Get("foo"));
+    Open();
+    ASSERT_EQ(old_manifest, ManifestFileName());
+    ASSERT_EQ("bar", Get("foo"));
+}
+
+TEST_F(RecoveryTest, LargeManifestCompacted)
+{
+    if (!CanAppend())
+    {
+        std::fprintf(stderr, "skipping test because env does not support appending\n");
+        return;
+    }
+    ASSERT_LEVELDB_OK(Put("foo", "bar"));
+    Close();
+    std::string old_manifest = ManifestFileName();
+
+    // Pad with zeroes to make manifest file very big.
+    {
+        uint64_t len = FileSize(old_manifest);
+        WritableFile* file;
+        ASSERT_LEVELDB_OK(env()->NewAppendableFile(old_manifest, &file));
+        std::string zeroes(3 * 1048576 - static_cast<size_t>(len), 0);
+        ASSERT_LEVELDB_OK(file->Append(zeroes));
+        ASSERT_LEVELDB_OK(file->Flush());
+        delete file;
+    }
+
+    Open();
+    std::string new_manifest = ManifestFileName();
+    ASSERT_NE(old_manifest, new_manifest);
+    ASSERT_GT(10000, FileSize(new_manifest));
+    ASSERT_EQ("bar", Get("foo"));
+
+    Open();
+    ASSERT_EQ(new_manifest, ManifestFileName());
+    ASSERT_EQ("bar", Get("foo"));
+}
+
+TEST_F(RecoveryTest, NoLogFiles)
+{
+    ASSERT_LEVELDB_OK(Put("foo", "bar"));
+    ASSERT_EQ(1, RemoveLogFiles());
+    Open();
+    ASSERT_EQ("NOT_FOUND", Get("foo"));
+    Open();
+    ASSERT_EQ("NOT_FOUND", Get("foo"));
+}
+
+TEST_F(RecoveryTest, LogFileReuse)
+{
+    if (!CanAppend())
+    {
+        std::fprintf(stderr, "skipping test because env does not support appending\n");
+        return;
+    }
+    for (int i = 0; i < 2; i++)
+    {
         ASSERT_LEVELDB_OK(Put("foo", "bar"));
+        if (i == 0)
+        {
+            // Compact to ensure current log is empty
+            CompactMemTable();
+        }
         Close();
-        std::string old_manifest = ManifestFileName();
+        ASSERT_EQ(1, NumLogs());
+        uint64_t number = FirstLogFile();
+        if (i == 0)
+        {
+            ASSERT_EQ(0, FileSize(LogName(number)));
+        }
+        else
+        {
+            ASSERT_LT(0, FileSize(LogName(number)));
+        }
         Open();
-        ASSERT_EQ(old_manifest, ManifestFileName());
+        ASSERT_EQ(1, NumLogs());
+        ASSERT_EQ(number, FirstLogFile()) << "did not reuse log file";
         ASSERT_EQ("bar", Get("foo"));
         Open();
-        ASSERT_EQ(old_manifest, ManifestFileName());
+        ASSERT_EQ(1, NumLogs());
+        ASSERT_EQ(number, FirstLogFile()) << "did not reuse log file";
         ASSERT_EQ("bar", Get("foo"));
     }
+}
 
-    TEST_F(RecoveryTest, LargeManifestCompacted)
+TEST_F(RecoveryTest, MultipleMemTables)
+{
+    // Make a large log.
+    const int kNum = 1000;
+    for (int i = 0; i < kNum; i++)
     {
-        if (!CanAppend())
-        {
-            std::fprintf(stderr, "skipping test because env does not support appending\n");
-            return;
-        }
-        ASSERT_LEVELDB_OK(Put("foo", "bar"));
-        Close();
-        std::string old_manifest = ManifestFileName();
-
-        // Pad with zeroes to make manifest file very big.
-        {
-            uint64_t len = FileSize(old_manifest);
-            WritableFile* file;
-            ASSERT_LEVELDB_OK(env()->NewAppendableFile(old_manifest, &file));
-            std::string zeroes(3 * 1048576 - static_cast<size_t>(len), 0);
-            ASSERT_LEVELDB_OK(file->Append(zeroes));
-            ASSERT_LEVELDB_OK(file->Flush());
-            delete file;
-        }
-
-        Open();
-        std::string new_manifest = ManifestFileName();
-        ASSERT_NE(old_manifest, new_manifest);
-        ASSERT_GT(10000, FileSize(new_manifest));
-        ASSERT_EQ("bar", Get("foo"));
-
-        Open();
-        ASSERT_EQ(new_manifest, ManifestFileName());
-        ASSERT_EQ("bar", Get("foo"));
+        char buf[100];
+        std::snprintf(buf, sizeof(buf), "%050d", i);
+        ASSERT_LEVELDB_OK(Put(buf, buf));
     }
+    ASSERT_EQ(0, NumTables());
+    Close();
+    ASSERT_EQ(0, NumTables());
+    ASSERT_EQ(1, NumLogs());
+    uint64_t old_log_file = FirstLogFile();
 
-    TEST_F(RecoveryTest, NoLogFiles)
+    // Force creation of multiple memtables by reducing the write buffer size.
+    Options opt;
+    opt.reuse_logs = true;
+    opt.write_buffer_size = (kNum * 100) / 2;
+    Open(&opt);
+    ASSERT_LE(2, NumTables());
+    ASSERT_EQ(1, NumLogs());
+    ASSERT_NE(old_log_file, FirstLogFile()) << "must not reuse log";
+    for (int i = 0; i < kNum; i++)
     {
-        ASSERT_LEVELDB_OK(Put("foo", "bar"));
-        ASSERT_EQ(1, RemoveLogFiles());
-        Open();
-        ASSERT_EQ("NOT_FOUND", Get("foo"));
-        Open();
-        ASSERT_EQ("NOT_FOUND", Get("foo"));
+        char buf[100];
+        std::snprintf(buf, sizeof(buf), "%050d", i);
+        ASSERT_EQ(buf, Get(buf));
     }
+}
 
-    TEST_F(RecoveryTest, LogFileReuse)
+TEST_F(RecoveryTest, MultipleLogFiles)
+{
+    ASSERT_LEVELDB_OK(Put("foo", "bar"));
+    Close();
+    ASSERT_EQ(1, NumLogs());
+
+    // Make a bunch of uncompacted log files.
+    uint64_t old_log = FirstLogFile();
+    MakeLogFile(old_log + 1, 1000, "hello", "world");
+    MakeLogFile(old_log + 2, 1001, "hi", "there");
+    MakeLogFile(old_log + 3, 1002, "foo", "bar2");
+
+    // Recover and check that all log files were processed.
+    Open();
+    ASSERT_LE(1, NumTables());
+    ASSERT_EQ(1, NumLogs());
+    uint64_t new_log = FirstLogFile();
+    ASSERT_LE(old_log + 3, new_log);
+    ASSERT_EQ("bar2", Get("foo"));
+    ASSERT_EQ("world", Get("hello"));
+    ASSERT_EQ("there", Get("hi"));
+
+    // Test that previous recovery produced recoverable state.
+    Open();
+    ASSERT_LE(1, NumTables());
+    ASSERT_EQ(1, NumLogs());
+    if (CanAppend())
     {
-        if (!CanAppend())
-        {
-            std::fprintf(stderr, "skipping test because env does not support appending\n");
-            return;
-        }
-        for (int i = 0; i < 2; i++)
-        {
-            ASSERT_LEVELDB_OK(Put("foo", "bar"));
-            if (i == 0)
-            {
-                // Compact to ensure current log is empty
-                CompactMemTable();
-            }
-            Close();
-            ASSERT_EQ(1, NumLogs());
-            uint64_t number = FirstLogFile();
-            if (i == 0)
-            {
-                ASSERT_EQ(0, FileSize(LogName(number)));
-            }
-            else
-            {
-                ASSERT_LT(0, FileSize(LogName(number)));
-            }
-            Open();
-            ASSERT_EQ(1, NumLogs());
-            ASSERT_EQ(number, FirstLogFile()) << "did not reuse log file";
-            ASSERT_EQ("bar", Get("foo"));
-            Open();
-            ASSERT_EQ(1, NumLogs());
-            ASSERT_EQ(number, FirstLogFile()) << "did not reuse log file";
-            ASSERT_EQ("bar", Get("foo"));
-        }
+        ASSERT_EQ(new_log, FirstLogFile());
     }
+    ASSERT_EQ("bar2", Get("foo"));
+    ASSERT_EQ("world", Get("hello"));
+    ASSERT_EQ("there", Get("hi"));
 
-    TEST_F(RecoveryTest, MultipleMemTables)
+    // Check that introducing an older log file does not cause it to be re-read.
+    Close();
+    MakeLogFile(old_log + 1, 2000, "hello", "stale write");
+    Open();
+    ASSERT_LE(1, NumTables());
+    ASSERT_EQ(1, NumLogs());
+    if (CanAppend())
     {
-        // Make a large log.
-        const int kNum = 1000;
-        for (int i = 0; i < kNum; i++)
-        {
-            char buf[100];
-            std::snprintf(buf, sizeof(buf), "%050d", i);
-            ASSERT_LEVELDB_OK(Put(buf, buf));
-        }
-        ASSERT_EQ(0, NumTables());
-        Close();
-        ASSERT_EQ(0, NumTables());
-        ASSERT_EQ(1, NumLogs());
-        uint64_t old_log_file = FirstLogFile();
-
-        // Force creation of multiple memtables by reducing the write buffer size.
-        Options opt;
-        opt.reuse_logs = true;
-        opt.write_buffer_size = (kNum * 100) / 2;
-        Open(&opt);
-        ASSERT_LE(2, NumTables());
-        ASSERT_EQ(1, NumLogs());
-        ASSERT_NE(old_log_file, FirstLogFile()) << "must not reuse log";
-        for (int i = 0; i < kNum; i++)
-        {
-            char buf[100];
-            std::snprintf(buf, sizeof(buf), "%050d", i);
-            ASSERT_EQ(buf, Get(buf));
-        }
+        ASSERT_EQ(new_log, FirstLogFile());
     }
+    ASSERT_EQ("bar2", Get("foo"));
+    ASSERT_EQ("world", Get("hello"));
+    ASSERT_EQ("there", Get("hi"));
+}
 
-    TEST_F(RecoveryTest, MultipleLogFiles)
-    {
-        ASSERT_LEVELDB_OK(Put("foo", "bar"));
-        Close();
-        ASSERT_EQ(1, NumLogs());
+TEST_F(RecoveryTest, ManifestMissing)
+{
+    ASSERT_LEVELDB_OK(Put("foo", "bar"));
+    Close();
+    RemoveManifestFile();
 
-        // Make a bunch of uncompacted log files.
-        uint64_t old_log = FirstLogFile();
-        MakeLogFile(old_log + 1, 1000, "hello", "world");
-        MakeLogFile(old_log + 2, 1001, "hi", "there");
-        MakeLogFile(old_log + 3, 1002, "foo", "bar2");
-
-        // Recover and check that all log files were processed.
-        Open();
-        ASSERT_LE(1, NumTables());
-        ASSERT_EQ(1, NumLogs());
-        uint64_t new_log = FirstLogFile();
-        ASSERT_LE(old_log + 3, new_log);
-        ASSERT_EQ("bar2", Get("foo"));
-        ASSERT_EQ("world", Get("hello"));
-        ASSERT_EQ("there", Get("hi"));
-
-        // Test that previous recovery produced recoverable state.
-        Open();
-        ASSERT_LE(1, NumTables());
-        ASSERT_EQ(1, NumLogs());
-        if (CanAppend())
-        {
-            ASSERT_EQ(new_log, FirstLogFile());
-        }
-        ASSERT_EQ("bar2", Get("foo"));
-        ASSERT_EQ("world", Get("hello"));
-        ASSERT_EQ("there", Get("hi"));
-
-        // Check that introducing an older log file does not cause it to be re-read.
-        Close();
-        MakeLogFile(old_log + 1, 2000, "hello", "stale write");
-        Open();
-        ASSERT_LE(1, NumTables());
-        ASSERT_EQ(1, NumLogs());
-        if (CanAppend())
-        {
-            ASSERT_EQ(new_log, FirstLogFile());
-        }
-        ASSERT_EQ("bar2", Get("foo"));
-        ASSERT_EQ("world", Get("hello"));
-        ASSERT_EQ("there", Get("hi"));
-    }
-
-    TEST_F(RecoveryTest, ManifestMissing)
-    {
-        ASSERT_LEVELDB_OK(Put("foo", "bar"));
-        Close();
-        RemoveManifestFile();
-
-        Status status = OpenWithStatus();
+    Status status = OpenWithStatus();
 #if defined(LEVELDB_PLATFORM_CHROMIUM)
-        // TODO(crbug.com/760362): See comment in MakeIOError() from env_chromium.cc.
-        ASSERT_TRUE(status.IsIOError());
+    // TODO(crbug.com/760362): See comment in MakeIOError() from env_chromium.cc.
+    ASSERT_TRUE(status.IsIOError());
 #else
-        ASSERT_TRUE(status.IsCorruption());
+    ASSERT_TRUE(status.IsCorruption());
 #endif // defined(LEVELDB_PLATFORM_CHROMIUM)
-    }
+}
 
 } // namespace leveldb

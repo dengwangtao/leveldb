@@ -12,11 +12,11 @@
 namespace leveldb
 {
 
-    // Wraps an instance whose destructor is never called.
-    //
-    // This is intended for use with function-level static variables.
-    template <typename InstanceType> class NoDestructor
-    {
+// Wraps an instance whose destructor is never called.
+//
+// This is intended for use with function-level static variables.
+template <typename InstanceType> class NoDestructor
+{
     public:
         template <typename... ConstructorArgTypes> explicit NoDestructor(ConstructorArgTypes&&... constructor_args)
         {
@@ -42,7 +42,7 @@ namespace leveldb
 
     private:
         alignas(InstanceType) char instance_storage_[sizeof(InstanceType)];
-    };
+};
 
 } // namespace leveldb
 

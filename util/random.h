@@ -10,11 +10,11 @@
 namespace leveldb
 {
 
-    // A very simple random number generator.  Not especially good at
-    // generating truly random bits, but good enough for our needs in this
-    // package.
-    class Random
-    {
+// A very simple random number generator.  Not especially good at
+// generating truly random bits, but good enough for our needs in this
+// package.
+class Random
+{
     private:
         uint32_t seed_;
 
@@ -71,7 +71,7 @@ namespace leveldb
         {
             return Uniform(1 << Uniform(max_log + 1));
         }
-    };
+};
 
 } // namespace leveldb
 

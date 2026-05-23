@@ -18,8 +18,9 @@ AllowShortCaseLabelsOnASingleLine: false
 PointerAlignment: Left
 ReferenceAlignment: Left
 
-AccessModifierOffset: -4
-NamespaceIndentation: All
+IndentAccessModifiers: true
+AccessModifierOffset: 0
+NamespaceIndentation: None
 IndentCaseLabels: true
 IndentCaseBlocks: false
 

@@ -27,42 +27,42 @@
 namespace leveldb
 {
 
-    namespace log
-    {
-        class Writer;
-    }
+namespace log
+{
+class Writer;
+}
 
-    class Compaction;
-    class Iterator;
-    class MemTable;
-    class TableBuilder;
-    class TableCache;
-    class Version;
-    class VersionSet;
-    class WritableFile;
+class Compaction;
+class Iterator;
+class MemTable;
+class TableBuilder;
+class TableCache;
+class Version;
+class VersionSet;
+class WritableFile;
 
-    // Return the smallest index i such that files[i]->largest >= key.
-    // Return files.size() if there is no such file.
-    // REQUIRES: "files" contains a sorted list of non-overlapping files.
-    int FindFile(const InternalKeyComparator& icmp, const std::vector<FileMetaData*>& files, const Slice& key);
+// Return the smallest index i such that files[i]->largest >= key.
+// Return files.size() if there is no such file.
+// REQUIRES: "files" contains a sorted list of non-overlapping files.
+int FindFile(const InternalKeyComparator& icmp, const std::vector<FileMetaData*>& files, const Slice& key);
 
-    // Returns true iff some file in "files" overlaps the user key range
-    // [*smallest,*largest].
-    // smallest==nullptr represents a key smaller than all keys in the DB.
-    // largest==nullptr represents a key largest than all keys in the DB.
-    // REQUIRES: If disjoint_sorted_files, files[] contains disjoint ranges
-    //           in sorted order.
-    bool SomeFileOverlapsRange(const InternalKeyComparator& icmp, bool disjoint_sorted_files,
-                               const std::vector<FileMetaData*>& files, const Slice* smallest_user_key,
-                               const Slice* largest_user_key);
+// Returns true iff some file in "files" overlaps the user key range
+// [*smallest,*largest].
+// smallest==nullptr represents a key smaller than all keys in the DB.
+// largest==nullptr represents a key largest than all keys in the DB.
+// REQUIRES: If disjoint_sorted_files, files[] contains disjoint ranges
+//           in sorted order.
+bool SomeFileOverlapsRange(const InternalKeyComparator& icmp, bool disjoint_sorted_files,
+                           const std::vector<FileMetaData*>& files, const Slice* smallest_user_key,
+                           const Slice* largest_user_key);
 
-    class Version
-    {
+class Version
+{
     public:
         struct GetStats
         {
-            FileMetaData* seek_file;
-            int seek_file_level;
+                FileMetaData* seek_file;
+                int seek_file_level;
         };
 
         // Append to *iters a sequence of iterators that will
@@ -157,10 +157,10 @@ namespace leveldb
         // are initialized by Finalize().
         double compaction_score_;
         int compaction_level_;
-    };
+};
 
-    class VersionSet
-    {
+class VersionSet
+{
     public:
         VersionSet(const std::string& dbname, const Options* options, TableCache* table_cache,
                    const InternalKeyComparator*);
@@ -282,7 +282,7 @@ namespace leveldb
         // of files per level.  Uses *scratch as backing store.
         struct LevelSummaryStorage
         {
-            char buffer[100];
+                char buffer[100];
         };
         const char* LevelSummary(LevelSummaryStorage* scratch) const;
 
@@ -328,11 +328,11 @@ namespace leveldb
         // Per-level key at which the next compaction at that level should start.
         // Either an empty string, or a valid InternalKey.
         std::string compact_pointer_[config::kNumLevels];
-    };
+};
 
-    // A Compaction encapsulates information about a compaction.
-    class Compaction
-    {
+// A Compaction encapsulates information about a compaction.
+class Compaction
+{
     public:
         ~Compaction();
 
@@ -417,7 +417,7 @@ namespace leveldb
         // higher level than the ones involved in this compaction (i.e. for
         // all L >= level_ + 2).
         size_t level_ptrs_[config::kNumLevels];
-    };
+};
 
 } // namespace leveldb
 

@@ -14,10 +14,10 @@
 namespace leveldb
 {
 
-    class VersionSet;
+class VersionSet;
 
-    struct FileMetaData
-    {
+struct FileMetaData
+{
         FileMetaData() : refs(0), allowed_seeks(1 << 30), file_size(0)
         {
         }
@@ -28,10 +28,10 @@ namespace leveldb
         uint64_t file_size;   // File size in bytes
         InternalKey smallest; // Smallest internal key served by table
         InternalKey largest;  // Largest internal key served by table
-    };
+};
 
-    class VersionEdit
-    {
+class VersionEdit
+{
     public:
         VersionEdit()
         {
@@ -115,7 +115,7 @@ namespace leveldb
         std::vector<std::pair<int, InternalKey>> compact_pointers_;
         DeletedFileSet deleted_files_;
         std::vector<std::pair<int, FileMetaData>> new_files_;
-    };
+};
 
 } // namespace leveldb
 

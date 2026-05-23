@@ -26,14 +26,14 @@
 namespace leveldb
 {
 
-    class LEVELDB_EXPORT Cache;
+class LEVELDB_EXPORT Cache;
 
-    // Create a new cache with a fixed size capacity.  This implementation
-    // of Cache uses a least-recently-used eviction policy.
-    LEVELDB_EXPORT Cache* NewLRUCache(size_t capacity);
+// Create a new cache with a fixed size capacity.  This implementation
+// of Cache uses a least-recently-used eviction policy.
+LEVELDB_EXPORT Cache* NewLRUCache(size_t capacity);
 
-    class LEVELDB_EXPORT Cache
-    {
+class LEVELDB_EXPORT Cache
+{
     public:
         Cache() = default;
 
@@ -102,7 +102,7 @@ namespace leveldb
         // Return an estimate of the combined charges of all elements stored in the
         // cache.
         virtual size_t TotalCharge() const = 0;
-    };
+};
 
 } // namespace leveldb
 

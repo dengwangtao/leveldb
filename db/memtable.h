@@ -15,11 +15,11 @@
 namespace leveldb
 {
 
-    class InternalKeyComparator;
-    class MemTableIterator;
+class InternalKeyComparator;
+class MemTableIterator;
 
-    class MemTable
-    {
+class MemTable
+{
     public:
         // MemTables are reference counted.  The initial reference count
         // is zero and the caller must call Ref() at least once.
@@ -74,11 +74,11 @@ namespace leveldb
 
         struct KeyComparator
         {
-            const InternalKeyComparator comparator;
-            explicit KeyComparator(const InternalKeyComparator& c) : comparator(c)
-            {
-            }
-            int operator()(const char* a, const char* b) const;
+                const InternalKeyComparator comparator;
+                explicit KeyComparator(const InternalKeyComparator& c) : comparator(c)
+                {
+                }
+                int operator()(const char* a, const char* b) const;
         };
 
         typedef SkipList<const char*, KeyComparator> Table;
@@ -89,7 +89,7 @@ namespace leveldb
         int refs_;
         Arena arena_;
         Table table_;
-    };
+};
 
 } // namespace leveldb
 

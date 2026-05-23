@@ -22,8 +22,8 @@
 namespace leveldb
 {
 
-    class LEVELDB_EXPORT Status
-    {
+class LEVELDB_EXPORT Status
+{
     public:
         // Create a success status.
         Status() noexcept : state_(nullptr)
@@ -136,28 +136,28 @@ namespace leveldb
         //    state_[4]    == code
         //    state_[5..]  == message
         const char* state_;
-    };
+};
 
-    inline Status::Status(const Status& rhs)
+inline Status::Status(const Status& rhs)
+{
+    state_ = (rhs.state_ == nullptr) ? nullptr : CopyState(rhs.state_);
+}
+inline Status& Status::operator=(const Status& rhs)
+{
+    // The following condition catches both aliasing (when this == &rhs),
+    // and the common case where both rhs and *this are ok.
+    if (state_ != rhs.state_)
     {
+        delete[] state_;
         state_ = (rhs.state_ == nullptr) ? nullptr : CopyState(rhs.state_);
     }
-    inline Status& Status::operator=(const Status& rhs)
-    {
-        // The following condition catches both aliasing (when this == &rhs),
-        // and the common case where both rhs and *this are ok.
-        if (state_ != rhs.state_)
-        {
-            delete[] state_;
-            state_ = (rhs.state_ == nullptr) ? nullptr : CopyState(rhs.state_);
-        }
-        return *this;
-    }
-    inline Status& Status::operator=(Status&& rhs) noexcept
-    {
-        std::swap(state_, rhs.state_);
-        return *this;
-    }
+    return *this;
+}
+inline Status& Status::operator=(Status&& rhs) noexcept
+{
+    std::swap(state_, rhs.state_);
+    return *this;
+}
 
 } // namespace leveldb
 

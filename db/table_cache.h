@@ -18,10 +18,10 @@
 namespace leveldb
 {
 
-    class Env;
+class Env;
 
-    class TableCache
-    {
+class TableCache
+{
     public:
         TableCache(const std::string& dbname, const Options& options, int entries);
 
@@ -55,7 +55,7 @@ namespace leveldb
         const std::string dbname_;
         const Options& options_;
         Cache* cache_;
-    };
+};
 
 } // namespace leveldb
 

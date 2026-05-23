@@ -11,12 +11,12 @@
 namespace leveldb
 {
 
-    class SnapshotList;
+class SnapshotList;
 
-    // Snapshots are kept in a doubly-linked list in the DB.
-    // Each SnapshotImpl corresponds to a particular sequence number.
-    class SnapshotImpl : public Snapshot
-    {
+// Snapshots are kept in a doubly-linked list in the DB.
+// Each SnapshotImpl corresponds to a particular sequence number.
+class SnapshotImpl : public Snapshot
+{
     public:
         SnapshotImpl(SequenceNumber sequence_number) : sequence_number_(sequence_number)
         {
@@ -40,10 +40,10 @@ namespace leveldb
 #if !defined(NDEBUG)
         SnapshotList* list_ = nullptr;
 #endif // !defined(NDEBUG)
-    };
+};
 
-    class SnapshotList
-    {
+class SnapshotList
+{
     public:
         SnapshotList() : head_(0)
         {
@@ -103,7 +103,7 @@ namespace leveldb
     private:
         // Dummy head of doubly-linked list of snapshots
         SnapshotImpl head_;
-    };
+};
 
 } // namespace leveldb
 

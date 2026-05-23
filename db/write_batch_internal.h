@@ -11,12 +11,12 @@
 namespace leveldb
 {
 
-    class MemTable;
+class MemTable;
 
-    // WriteBatchInternal provides static methods for manipulating a
-    // WriteBatch that we don't want in the public WriteBatch interface.
-    class WriteBatchInternal
-    {
+// WriteBatchInternal provides static methods for manipulating a
+// WriteBatch that we don't want in the public WriteBatch interface.
+class WriteBatchInternal
+{
     public:
         // Return the number of entries in the batch.
         static int Count(const WriteBatch* batch);
@@ -46,7 +46,7 @@ namespace leveldb
         static Status InsertInto(const WriteBatch* batch, MemTable* memtable);
 
         static void Append(WriteBatch* dst, const WriteBatch* src);
-    };
+};
 
 } // namespace leveldb
 

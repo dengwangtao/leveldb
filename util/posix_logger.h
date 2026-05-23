@@ -22,8 +22,8 @@
 namespace leveldb
 {
 
-    class PosixLogger final : public Logger
-    {
+class PosixLogger final : public Logger
+{
     public:
         // Creates a logger that writes to the given file.
         //
@@ -133,7 +133,7 @@ namespace leveldb
 
     private:
         std::FILE* const fp_;
-    };
+};
 
 } // namespace leveldb
 

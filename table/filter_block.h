@@ -20,16 +20,16 @@
 namespace leveldb
 {
 
-    class FilterPolicy;
+class FilterPolicy;
 
-    // A FilterBlockBuilder is used to construct all of the filters for a
-    // particular Table.  It generates a single string which is stored as
-    // a special block in the Table.
-    //
-    // The sequence of calls to FilterBlockBuilder must match the regexp:
-    //      (StartBlock AddKey*)* Finish
-    class FilterBlockBuilder
-    {
+// A FilterBlockBuilder is used to construct all of the filters for a
+// particular Table.  It generates a single string which is stored as
+// a special block in the Table.
+//
+// The sequence of calls to FilterBlockBuilder must match the regexp:
+//      (StartBlock AddKey*)* Finish
+class FilterBlockBuilder
+{
     public:
         explicit FilterBlockBuilder(const FilterPolicy*);
 
@@ -49,10 +49,10 @@ namespace leveldb
         std::string result_;          // Filter data computed so far
         std::vector<Slice> tmp_keys_; // policy_->CreateFilter() argument
         std::vector<uint32_t> filter_offsets_;
-    };
+};
 
-    class FilterBlockReader
-    {
+class FilterBlockReader
+{
     public:
         // REQUIRES: "contents" and *policy must stay live while *this is live.
         FilterBlockReader(const FilterPolicy* policy, const Slice& contents);
@@ -64,7 +64,7 @@ namespace leveldb
         const char* offset_; // Pointer to beginning of offset array (at block-end)
         size_t num_;         // Number of entries in offset array
         size_t base_lg_;     // Encoding parameter (see kFilterBaseLg in .cc file)
-    };
+};
 
 } // namespace leveldb
 
