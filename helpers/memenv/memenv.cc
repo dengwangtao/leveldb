@@ -80,6 +80,8 @@ class FileState
             size_ = 0;
         }
 
+        // 从offset处尽可能的读取n个字节，并将结果放入result中
+        // scratch是由外部传入的缓冲区，用于临时存放读取的字节
         Status Read(uint64_t offset, size_t n, Slice* result, char* scratch) const
         {
             MutexLock lock(&blocks_mutex_);
@@ -103,7 +105,8 @@ class FileState
             size_t block_offset = offset % kBlockSize;
             size_t bytes_to_copy = n;
             char* dst = scratch;
-
+            
+            // 每次至多读取一个block(8k)的大小
             while (bytes_to_copy > 0)
             {
                 size_t avail = kBlockSize - block_offset;
@@ -122,7 +125,8 @@ class FileState
             *result = Slice(scratch, n);
             return Status::OK();
         }
-
+        
+        // 追加data到文件末尾
         Status Append(const Slice& data)
         {
             const char* src = data.data();
