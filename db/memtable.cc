@@ -126,6 +126,13 @@ void MemTable::Add(SequenceNumber s, ValueType type, const Slice& key, const Sli
     //  tag          : uint64((sequence << 8) | type)
     //  value_size   : varint32 of value.size()
     //  value bytes  : char[value.size()]
+
+    // +----------------------+---------------+--------------------------------+------------+------------------+
+    // |       1~5bytes       | key_len bytes | 8bytes                         |  1~5bytes  | value size bytes |
+    // +----------------------+---------------+--------------------------------+------------+------------------+
+    // | key_len + 8(tag len) |   key data    | tag:                           | value size |    value data    |
+    // |                      |               | uint64((sequence << 8) | type) |            |                  |
+    // +----------------------+---------------+--------------------------------+------------+------------------+
     size_t key_size = key.size();
     size_t val_size = value.size();
     size_t internal_key_size = key_size + 8;

@@ -197,7 +197,7 @@ template <typename Key, class Comparator>
 typename SkipList<Key, Comparator>::Node* SkipList<Key, Comparator>::NewNode(const Key& key, int height)
 {
     char* const node_memory = arena_->AllocateAligned(sizeof(Node) + sizeof(std::atomic<Node*>) * (height - 1));
-    return new (node_memory) Node(key);
+    return new (node_memory) Node(key); // placement new
 }
 
 template <typename Key, class Comparator>

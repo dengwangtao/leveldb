@@ -66,7 +66,8 @@ enum ValueType
 // ValueType, not the lowest).
 static const ValueType kValueTypeForSeek = kTypeValue;
 
-typedef uint64_t SequenceNumber;
+// typedef uint64_t SequenceNumber;
+using SequenceNumber = uint64_t;
 
 // We leave eight bits empty at the bottom so a type and sequence#
 // can be packed together into 64-bits.
@@ -151,6 +152,11 @@ class InternalFilterPolicy : public FilterPolicy
 // Modules in this directory should keep internal keys wrapped inside
 // the following class instead of plain strings so that we do not
 // incorrectly use string comparisons instead of an InternalKeyComparator.
+// ╔═════════════════╦═══════════════════╦═══════════════════╗
+// ║  several bytes  ║      56bits       ║       8bits       ║
+// ╠═════════════════╬═══════════════════╬═══════════════════╣
+// ║    user_key     ║  sequence number  ║  type(ValueType)  ║
+// ╚═════════════════╩═══════════════════╩═══════════════════╝
 class InternalKey
 {
     private:
@@ -253,6 +259,15 @@ class LookupKey
         //                                    <-- end_
         // The array is a suitable MemTable key.
         // The suffix starting with "userkey" can be used as an InternalKey.
+
+        // start_        kstart_                      end_
+        // ⬇             ⬇                            ⬇
+        // ╔═════════════╦═════════════════╦══════════╗
+        // ║  1~5bytes   ║  klength bytes  ║  8bytes  ║
+        // ╠═════════════╬═════════════════╬══════════╣
+        // ║  klength+8  ║     userkey     ║   tag    ║
+        // ╚═════════════╩═════════════════╩══════════╝
+
         const char* start_;
         const char* kstart_;
         const char* end_;
