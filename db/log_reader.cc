@@ -36,6 +36,7 @@ bool Reader::SkipToInitialBlock()
     uint64_t block_start_location = initial_offset_ - offset_in_block;
 
     // Don't search a block if we'd be in the trailer
+    // log_writer在写入的时候,一个block剩余的空间不足以容纳一个header的时候,这块空间就是trailer,不写入有效数据
     if (offset_in_block > kBlockSize - (kHeaderSize - 1)) // if (offset_in_block > kBlockSize - 6)
     {
         block_start_location += kBlockSize;
@@ -224,6 +225,8 @@ unsigned int Reader::ReadPhysicalRecord(Slice* result)
             {
                 // Last read was a full read, so this is a trailer to skip
                 buffer_.clear();
+                // buffer_是一个切片, 实际读取的数据的owner是backing_store_, buffer引用了backing_store_
+                // backing_store_是一个char数组, 大小为kBlockSiz(32kb), 用来存储从文件中读取的数据
                 Status status = file_->Read(kBlockSize, &buffer_, backing_store_);
                 end_of_buffer_offset_ += buffer_.size();
                 if (!status.ok())
