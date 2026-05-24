@@ -116,7 +116,7 @@ bool Reader::ReadRecord(Slice* record, std::string* scratch)
                         ReportCorruption(scratch->size(), "partial record without end(1)");
                     }
                 }
-                prospective_record_offset = physical_record_offset;
+                prospective_record_offset = physical_record_offset; // 记录当前record的起始位置的offset
                 scratch->clear();
                 *record = fragment;
                 last_record_offset_ = prospective_record_offset;
@@ -135,8 +135,8 @@ bool Reader::ReadRecord(Slice* record, std::string* scratch)
                     }
                 }
                 prospective_record_offset = physical_record_offset;
-                scratch->assign(fragment.data(), fragment.size());
-                in_fragmented_record = true;
+                scratch->assign(fragment.data(), fragment.size()); // 将首段record放入到临时空间中
+                in_fragmented_record = true; // 标记当前record是一个被分割的record, 还没有读到完整的record
                 break;
 
             case kMiddleType:
@@ -146,6 +146,7 @@ bool Reader::ReadRecord(Slice* record, std::string* scratch)
                 }
                 else
                 {
+                    // 将中间段record追加到临时空间中
                     scratch->append(fragment.data(), fragment.size());
                 }
                 break;
@@ -157,6 +158,7 @@ bool Reader::ReadRecord(Slice* record, std::string* scratch)
                 }
                 else
                 {
+                    // 将末段record追加到临时空间中, 组成完整的record
                     scratch->append(fragment.data(), fragment.size());
                     *record = Slice(*scratch);
                     last_record_offset_ = prospective_record_offset;

@@ -56,6 +56,7 @@ class Reader
         // "*scratch" as temporary storage.  The contents filled in *record
         // will only be valid until the next mutating operation on this
         // reader or the next mutation to *scratch.
+        // 将数据读入到scratch中，并将record指向scratch中的数据
         bool ReadRecord(Slice* record, std::string* scratch);
 
         // Returns the physical offset of the last record returned by ReadRecord.
