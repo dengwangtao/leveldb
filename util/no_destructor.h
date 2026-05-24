@@ -15,10 +15,12 @@ namespace leveldb
 // Wraps an instance whose destructor is never called.
 //
 // This is intended for use with function-level static variables.
-template <typename InstanceType> class NoDestructor
+template <typename InstanceType>
+class NoDestructor
 {
     public:
-        template <typename... ConstructorArgTypes> explicit NoDestructor(ConstructorArgTypes&&... constructor_args)
+        template <typename... ConstructorArgTypes>
+        explicit NoDestructor(ConstructorArgTypes&&... constructor_args)
         {
             static_assert(sizeof(instance_storage_) >= sizeof(InstanceType),
                           "instance_storage_ is not large enough to hold the instance");

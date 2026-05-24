@@ -35,3 +35,5 @@ SortIncludes: false
 
 KeepEmptyLinesAtTheStartOfBlocks: false
 MaxEmptyLinesToKeep: 1
+
+AlwaysBreakTemplateDeclarations: Yes

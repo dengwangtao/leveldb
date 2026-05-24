@@ -865,7 +865,8 @@ void WindowsEnv::BackgroundThreadMain()
 //     static PlatformSingletonEnv default_env;
 //     return default_env.env();
 //   }
-template <typename EnvType> class SingletonEnv
+template <typename EnvType>
+class SingletonEnv
 {
     public:
         SingletonEnv()
@@ -906,7 +907,8 @@ template <typename EnvType> class SingletonEnv
 };
 
 #if !defined(NDEBUG)
-template <typename EnvType> std::atomic<bool> SingletonEnv<EnvType>::env_initialized_;
+template <typename EnvType>
+std::atomic<bool> SingletonEnv<EnvType>::env_initialized_;
 #endif // !defined(NDEBUG)
 
 using WindowsDefaultEnv = SingletonEnv<WindowsEnv>;

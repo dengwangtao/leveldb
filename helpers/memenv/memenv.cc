@@ -105,7 +105,7 @@ class FileState
             size_t block_offset = offset % kBlockSize;
             size_t bytes_to_copy = n;
             char* dst = scratch;
-            
+
             // 每次至多读取一个block(8k)的大小
             while (bytes_to_copy > 0)
             {
@@ -125,7 +125,7 @@ class FileState
             *result = Slice(scratch, n);
             return Status::OK();
         }
-        
+
         // 追加data到文件末尾
         Status Append(const Slice& data)
         {
