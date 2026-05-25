@@ -124,9 +124,9 @@ class HandleTable
     private:
         // The table consists of an array of buckets where each bucket is
         // a linked list of cache entries that hash into the bucket.
-        uint32_t length_;
-        uint32_t elems_;
-        LRUHandle** list_;
+        uint32_t length_;  // 表示bucket数量
+        uint32_t elems_;   // 元素数量
+        LRUHandle** list_; // bucket数组,每个元素是一个链表的头指针. 每个 bucket 是一个链表，链表通过LRUHandle::next_hash连接
 
         // Return a pointer to slot that points to a cache entry that
         // matches key/hash.  If there is no such cache entry, return a
@@ -156,6 +156,7 @@ class HandleTable
                 LRUHandle* h = list_[i];
                 while (h != nullptr)
                 {
+                    // 链表头插法, 将h插入到new_list[h->hash & (new_length - 1)]的链表头
                     LRUHandle* next = h->next_hash;
                     uint32_t hash = h->hash;
                     LRUHandle** ptr = &new_list[hash & (new_length - 1)];
@@ -200,6 +201,7 @@ class LRUCache
 
     private:
         void LRU_Remove(LRUHandle* e);
+        // 将e添加到循环链表的末尾，即添加到list节点的前面
         void LRU_Append(LRUHandle* list, LRUHandle* e);
         void Ref(LRUHandle* e);
         void Unref(LRUHandle* e);
@@ -328,6 +330,7 @@ Cache::Handle* LRUCache::Insert(const Slice& key, uint32_t hash, void* value, si
         e->in_cache = true;
         LRU_Append(&in_use_, e);
         usage_ += charge;
+        // 把e插入到hash表中,Insert会返回被插入元素的旧值,如果旧值不为nullptr,说明有重复key被插入了,需要把旧值从cache中删除掉
         FinishErase(table_.Insert(e));
     }
     else
@@ -335,6 +338,8 @@ Cache::Handle* LRUCache::Insert(const Slice& key, uint32_t hash, void* value, si
         // next is read by key() in an assert, so it must be initialized
         e->next = nullptr;
     }
+
+    // 链表的头部是最旧的元素,所以从next开始删除元素,直到usage_ <= capacity_
     while (usage_ > capacity_ && lru_.next != &lru_)
     {
         LRUHandle* old = lru_.next;
@@ -402,13 +407,13 @@ class ShardedLRUCache : public Cache
 
         static uint32_t Shard(uint32_t hash)
         {
-            return hash >> (32 - kNumShardBits);
+            return hash >> (32 - kNumShardBits); // 使用hash值的高4位作为分片idx
         }
 
     public:
         explicit ShardedLRUCache(size_t capacity) : last_id_(0)
         {
-            const size_t per_shard = (capacity + (kNumShards - 1)) / kNumShards;
+            const size_t per_shard = (capacity + (kNumShards - 1)) / kNumShards; // 向上取整, 每个分片的容量为总容量除以分片数量
             for (int s = 0; s < kNumShards; s++)
             {
                 shard_[s].SetCapacity(per_shard);
