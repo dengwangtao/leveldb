@@ -22,6 +22,11 @@ class BloomFilterPolicy : public FilterPolicy
     public:
         explicit BloomFilterPolicy(int bits_per_key) : bits_per_key_(bits_per_key)
         {
+            // 哈希函数的个数k
+            // 布隆过滤器位数组的容量m
+            // 布隆过滤器插入的数据数量n
+            // 为了获得最优的准确率，当k = ln2 * (m/n)时，布隆过滤器获得最优的准确性；
+
             // We intentionally round down to reduce probing cost a little bit
             k_ = static_cast<size_t>(bits_per_key * 0.69); // 0.69 =~ ln(2)
             if (k_ < 1)
