@@ -44,11 +44,11 @@ class FilterBlockBuilder
         void GenerateFilter();
 
         const FilterPolicy* policy_;
-        std::string keys_;            // Flattened key contents
+        std::string keys_;            // add进来的所有key,摆放在 keys_ 中， start_中记录每个 key 的起始位置
         std::vector<size_t> start_;   // Starting index in keys_ of each key
-        std::string result_;          // Filter data computed so far
-        std::vector<Slice> tmp_keys_; // policy_->CreateFilter() argument
-        std::vector<uint32_t> filter_offsets_;
+        std::string result_;          // 最终的filter block结果
+        std::vector<Slice> tmp_keys_; // 用于在GenerateFilter时，构建一个临时的Slice数组，成员指向 keys_ 中的每个key的开始
+        std::vector<uint32_t> filter_offsets_; // 每个元素记录一个过滤器的起始位置
 };
 
 class FilterBlockReader

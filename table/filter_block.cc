@@ -47,11 +47,13 @@ Slice FilterBlockBuilder::Finish()
 
     // Append array of per-filter offsets
     const uint32_t array_offset = result_.size();
+    // 在result中追加每个filter的起始位置
     for (size_t i = 0; i < filter_offsets_.size(); i++)
     {
         PutFixed32(&result_, filter_offsets_[i]);
     }
 
+    // 在result中追加filter_offsets_数据的起始位置
     PutFixed32(&result_, array_offset);
     result_.push_back(kFilterBaseLg); // Save encoding parameter in result
     return Slice(result_);
