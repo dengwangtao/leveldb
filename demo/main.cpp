@@ -5,6 +5,7 @@
 
 #include "db.h"
 #include "write_batch.h"
+#include "filter_policy.h"
 
 void CheckStatus(const leveldb::Status& status, const std::string& msg)
 {
@@ -30,10 +31,11 @@ int main()
 
     leveldb::Options options;
     options.create_if_missing = true;
+    options.filter_policy = leveldb::NewBloomFilterPolicy(10); // 设置 Bloom Filter Policy
 
     const std::string db_path = "testdb";
 
-    if (false)
+    if (true)
     {
         // 每次启动前删除旧数据库
         leveldb::Status status = leveldb::DestroyDB(db_path, options);

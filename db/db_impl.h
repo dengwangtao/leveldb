@@ -152,37 +152,37 @@ class DBImpl : public DB
         }
 
         // Constant after construction
-        Env* const env_;
+        Env* const env_; // 操作系统抽象：负责文件、线程、锁、时间
         const InternalKeyComparator internal_comparator_;
         const InternalFilterPolicy internal_filter_policy_;
         const Options options_; // options_.comparator == &internal_comparator_
         const bool owns_info_log_;
         const bool owns_cache_;
-        const std::string dbname_;
+        const std::string dbname_; // 数据库目录
 
         // table_cache_ provides its own synchronization
-        TableCache* const table_cache_;
+        TableCache* const table_cache_; // sstable文件缓存
 
         // Lock over the persistent DB state.  Non-null iff successfully acquired.
         FileLock* db_lock_;
 
         // State below is protected by mutex_
-        port::Mutex mutex_;
-        std::atomic<bool> shutting_down_;
-        port::CondVar background_work_finished_signal_ GUARDED_BY(mutex_);
-        MemTable* mem_;
-        MemTable* imm_ GUARDED_BY(mutex_); // Memtable being compacted
-        std::atomic<bool> has_imm_;        // So bg thread can detect non-null imm_
-        WritableFile* logfile_;
-        uint64_t logfile_number_ GUARDED_BY(mutex_);
-        log::Writer* log_;
-        uint32_t seed_ GUARDED_BY(mutex_); // For sampling.
+        port::Mutex mutex_;                                                // dbimpl全局锁
+        std::atomic<bool> shutting_down_;                                  //
+        port::CondVar background_work_finished_signal_ GUARDED_BY(mutex_); //
+        MemTable* mem_;                                                    // 当前正在写入的memtable
+        MemTable* imm_ GUARDED_BY(mutex_);                                 // 已冻结，正在等待落盘的memtable
+        std::atomic<bool> has_imm_;                                        // So bg thread can detect non-null imm_
+        WritableFile* logfile_;                                            // 当前的WAL文件
+        uint64_t logfile_number_ GUARDED_BY(mutex_);                       //
+        log::Writer* log_;                                                 // WAL写入器
+        uint32_t seed_ GUARDED_BY(mutex_);                                 // For sampling.
 
         // Queue of writers.
-        std::deque<Writer*> writers_ GUARDED_BY(mutex_);
-        WriteBatch* tmp_batch_ GUARDED_BY(mutex_);
+        std::deque<Writer*> writers_ GUARDED_BY(mutex_); // 写线程队列
+        WriteBatch* tmp_batch_ GUARDED_BY(mutex_);       //
 
-        SnapshotList snapshots_ GUARDED_BY(mutex_);
+        SnapshotList snapshots_ GUARDED_BY(mutex_); //
 
         // Set of table files to protect from deletion because they are
         // part of ongoing compactions.
@@ -193,7 +193,7 @@ class DBImpl : public DB
 
         ManualCompaction* manual_compaction_ GUARDED_BY(mutex_);
 
-        VersionSet* const versions_ GUARDED_BY(mutex_);
+        VersionSet* const versions_ GUARDED_BY(mutex_); // 管理sstable文件版本
 
         // Have we encountered a background error in paranoid mode?
         Status bg_error_ GUARDED_BY(mutex_);
