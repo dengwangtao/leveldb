@@ -250,6 +250,11 @@ void TableBuilder::WriteBlock(BlockBuilder* block, BlockHandle* handle)
 
 void TableBuilder::WriteRawBlock(const Slice& block_contents, CompressionType type, BlockHandle* handle)
 {
+    // +---------------+----------------+-------+
+    // | several bytes |     1字节       | 4字节 |
+    // +---------------+----------------+-------+
+    // |  data block   | type(压缩方式)   |  crc |
+    // +---------------+----------------+-------+
     Rep* r = rep_;
     handle->set_offset(r->offset);
     handle->set_size(block_contents.size());
