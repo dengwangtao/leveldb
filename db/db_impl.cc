@@ -1400,8 +1400,10 @@ Status DBImpl::Write(const WriteOptions& options, WriteBatch* updates)
     w.sync = options.sync;
     w.done = false;
 
+    // 此处加锁
     MutexLock l(&mutex_);
     writers_.push_back(&w);
+    // 等待写入（等待当前的写入器成为队头）
     while (!w.done && &w != writers_.front())
     {
         w.cv.Wait();
@@ -1427,6 +1429,7 @@ Status DBImpl::Write(const WriteOptions& options, WriteBatch* updates)
         // into mem_.
         {
             mutex_.Unlock();
+            // 写入WAL
             status = log_->AddRecord(WriteBatchInternal::Contents(write_batch));
             bool sync_error = false;
             if (status.ok() && options.sync)
@@ -1439,6 +1442,7 @@ Status DBImpl::Write(const WriteOptions& options, WriteBatch* updates)
             }
             if (status.ok())
             {
+                // 写入memtable
                 status = WriteBatchInternal::InsertInto(write_batch, mem_);
             }
             mutex_.Lock();
@@ -1752,6 +1756,7 @@ Status DB::Open(const Options& options, const std::string& dbname, DB** dbptr)
     if (s.ok() && impl->mem_ == nullptr)
     {
         // Create new log and a corresponding memtable.
+        // 创建新的WAL & 创建新的MemTable
         uint64_t new_log_number = impl->versions_->NewFileNumber();
         WritableFile* lfile;
         s = options.env->NewWritableFile(LogFileName(dbname, new_log_number), &lfile);
