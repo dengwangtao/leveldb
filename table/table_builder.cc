@@ -54,28 +54,31 @@ struct TableBuilder::Rep
             : options(opt),
               index_block_options(opt),
               file(f),
-              offset(0),
-              data_block(&options),
-              index_block(&index_block_options),
+              offset(0),                         // 初始化文件偏移量为0
+              data_block(&options),              // 初始化 data block builder
+              index_block(&index_block_options), // 初始化 index block builder
               num_entries(0),
               closed(false),
+              // 如果有过滤器，就创建一个过滤器构建器
               filter_block(opt.filter_policy == nullptr ? nullptr : new FilterBlockBuilder(opt.filter_policy)),
               pending_index_entry(false)
         {
+            // 这样 index block 查询更直接，代价是索引稍微大一点，但通常可以接受
+            // 表示每个key都是全量存储
             index_block_options.block_restart_interval = 1;
         }
 
         Options options;
         Options index_block_options;
         WritableFile* file;
-        uint64_t offset;
+        uint64_t offset; // 记录当前 SSTable 文件已经写到哪个偏移位置
         Status status;
-        BlockBuilder data_block;
-        BlockBuilder index_block;
-        std::string last_key;
-        int64_t num_entries;
-        bool closed; // Either Finish() or Abandon() has been called.
-        FilterBlockBuilder* filter_block;
+        BlockBuilder data_block;  // 正在构建的当前 Data Block
+        BlockBuilder index_block; // 构建 Index Block (某个分界 key -> 某个 data block 的文件位置)
+        std::string last_key;     // 保存最近一次加入 SSTable 的 key
+        int64_t num_entries;      // 记录当前 SSTable 中已经加入了多少条 key-value entry
+        bool closed;              // 标记 TableBuilder 是否已经结束, Either Finish() or Abandon() has been called.
+        FilterBlockBuilder* filter_block; // 构建 Filter Block，例如 Bloom Filter
 
         // We do not emit the index entry for a block until we have seen the
         // first key for the next data block.  This allows us to use shorter
@@ -86,10 +89,10 @@ struct TableBuilder::Rep
         // blocks.
         //
         // Invariant: r->pending_index_entry is true only if data_block is empty.
-        bool pending_index_entry;
-        BlockHandle pending_handle; // Handle to add to index block
+        bool pending_index_entry; // 表示上一个 data block 已经写入文件，但它对应的 index entry 还没有写入 index block。
+        BlockHandle pending_handle; // 保存刚刚 Flush 出去的 data block 的文件位置，等待写入 index block
 
-        std::string compressed_output;
+        std::string compressed_output; // 作为 block 压缩后的临时输出缓冲区
 };
 
 TableBuilder::TableBuilder(const Options& options, WritableFile* file)
