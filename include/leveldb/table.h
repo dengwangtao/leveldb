@@ -65,7 +65,8 @@ class LEVELDB_EXPORT Table
 
         static Iterator* BlockReader(void*, const ReadOptions&, const Slice&);
 
-        explicit Table(Rep* rep) : rep_(rep)
+        explicit Table(Rep* rep)
+            : rep_(rep)
         {
         }
 

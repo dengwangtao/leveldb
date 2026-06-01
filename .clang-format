@@ -37,3 +37,8 @@ KeepEmptyLinesAtTheStartOfBlocks: false
 MaxEmptyLinesToKeep: 1
 
 AlwaysBreakTemplateDeclarations: Yes
+
+# 构造函数初始化列表
+BreakConstructorInitializers: BeforeColon
+PackConstructorInitializers: Never
+ConstructorInitializerIndentWidth: 4

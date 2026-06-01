@@ -82,7 +82,10 @@ struct ParsedInternalKey
         ParsedInternalKey()
         {
         } // Intentionally left uninitialized (for speed)
-        ParsedInternalKey(const Slice& u, const SequenceNumber& seq, ValueType t) : user_key(u), sequence(seq), type(t)
+        ParsedInternalKey(const Slice& u, const SequenceNumber& seq, ValueType t)
+            : user_key(u),
+              sequence(seq),
+              type(t)
         {
         }
         std::string DebugString() const;
@@ -118,7 +121,8 @@ class InternalKeyComparator : public Comparator
         const Comparator* user_comparator_;
 
     public:
-        explicit InternalKeyComparator(const Comparator* c) : user_comparator_(c)
+        explicit InternalKeyComparator(const Comparator* c)
+            : user_comparator_(c)
         {
         }
         const char* Name() const override;
@@ -141,7 +145,8 @@ class InternalFilterPolicy : public FilterPolicy
         const FilterPolicy* const user_policy_;
 
     public:
-        explicit InternalFilterPolicy(const FilterPolicy* p) : user_policy_(p)
+        explicit InternalFilterPolicy(const FilterPolicy* p)
+            : user_policy_(p)
         {
         }
         const char* Name() const override;

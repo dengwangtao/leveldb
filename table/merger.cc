@@ -18,7 +18,11 @@ class MergingIterator : public Iterator
 {
     public:
         MergingIterator(const Comparator* comparator, Iterator** children, int n)
-            : comparator_(comparator), children_(new IteratorWrapper[n]), n_(n), current_(nullptr), direction_(kForward)
+            : comparator_(comparator),
+              children_(new IteratorWrapper[n]),
+              n_(n),
+              current_(nullptr),
+              direction_(kForward)
         {
             for (int i = 0; i < n; i++)
             {

@@ -121,8 +121,14 @@ class Version
         class LevelFileNumIterator;
 
         explicit Version(VersionSet* vset)
-            : vset_(vset), next_(this), prev_(this), refs_(0), file_to_compact_(nullptr), file_to_compact_level_(-1),
-              compaction_score_(-1), compaction_level_(-1)
+            : vset_(vset),
+              next_(this),
+              prev_(this),
+              refs_(0),
+              file_to_compact_(nullptr),
+              file_to_compact_level_(-1),
+              compaction_score_(-1),
+              compaction_level_(-1)
         {
         }
 

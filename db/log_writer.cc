@@ -26,12 +26,16 @@ static void InitTypeCrc(uint32_t* type_crc)
     }
 }
 
-Writer::Writer(WritableFile* dest) : dest_(dest), block_offset_(0)
+Writer::Writer(WritableFile* dest)
+    : dest_(dest),
+      block_offset_(0)
 {
     InitTypeCrc(type_crc_);
 }
 
-Writer::Writer(WritableFile* dest, uint64_t dest_length) : dest_(dest), block_offset_(dest_length % kBlockSize)
+Writer::Writer(WritableFile* dest, uint64_t dest_length)
+    : dest_(dest),
+      block_offset_(dest_length % kBlockSize)
 {
     InitTypeCrc(type_crc_);
 }

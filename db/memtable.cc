@@ -24,7 +24,9 @@ static Slice GetLengthPrefixedSlice(const char* data)
 }
 
 MemTable::MemTable(const InternalKeyComparator& comparator)
-    : comparator_(comparator), refs_(0), table_(comparator_, &arena_)
+    : comparator_(comparator),
+      refs_(0),
+      table_(comparator_, &arena_)
 {
 }
 
@@ -60,7 +62,8 @@ static const char* EncodeKey(std::string* scratch, const Slice& target)
 class MemTableIterator : public Iterator
 {
     public:
-        explicit MemTableIterator(MemTable::Table* table) : iter_(table)
+        explicit MemTableIterator(MemTable::Table* table)
+            : iter_(table)
         {
         }
 

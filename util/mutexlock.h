@@ -24,7 +24,8 @@ namespace leveldb
 class SCOPED_LOCKABLE MutexLock
 {
     public:
-        explicit MutexLock(port::Mutex* mu) EXCLUSIVE_LOCK_FUNCTION(mu) : mu_(mu)
+        explicit MutexLock(port::Mutex* mu) EXCLUSIVE_LOCK_FUNCTION(mu)
+            : mu_(mu)
         {
             this->mu_->Lock();
         }

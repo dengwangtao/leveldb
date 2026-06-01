@@ -18,10 +18,13 @@ namespace leveldb
 class IteratorWrapper
 {
     public:
-        IteratorWrapper() : iter_(nullptr), valid_(false)
+        IteratorWrapper()
+            : iter_(nullptr),
+              valid_(false)
         {
         }
-        explicit IteratorWrapper(Iterator* iter) : iter_(nullptr)
+        explicit IteratorWrapper(Iterator* iter)
+            : iter_(nullptr)
         {
             Set(iter);
         }

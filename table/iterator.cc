@@ -53,7 +53,8 @@ namespace
 class EmptyIterator : public Iterator
 {
     public:
-        EmptyIterator(const Status& s) : status_(s)
+        EmptyIterator(const Status& s)
+            : status_(s)
         {
         }
         ~EmptyIterator() override = default;

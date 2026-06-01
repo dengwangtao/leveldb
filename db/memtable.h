@@ -75,7 +75,8 @@ class MemTable
         struct KeyComparator
         {
                 const InternalKeyComparator comparator;
-                explicit KeyComparator(const InternalKeyComparator& c) : comparator(c)
+                explicit KeyComparator(const InternalKeyComparator& c)
+                    : comparator(c)
                 {
                 }
                 int operator()(const char* a, const char* b) const;

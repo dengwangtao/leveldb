@@ -19,7 +19,8 @@ namespace leveldb
 class MemEnvTest : public testing::Test
 {
     public:
-        MemEnvTest() : env_(NewMemEnv(Env::Default()))
+        MemEnvTest()
+            : env_(NewMemEnv(Env::Default()))
         {
         }
         ~MemEnvTest()

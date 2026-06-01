@@ -26,7 +26,8 @@ class LEVELDB_EXPORT Status
 {
     public:
         // Create a success status.
-        Status() noexcept : state_(nullptr)
+        Status() noexcept
+            : state_(nullptr)
         {
         }
         ~Status()
@@ -37,7 +38,8 @@ class LEVELDB_EXPORT Status
         Status(const Status& rhs);
         Status& operator=(const Status& rhs);
 
-        Status(Status&& rhs) noexcept : state_(rhs.state_)
+        Status(Status&& rhs) noexcept
+            : state_(rhs.state_)
         {
             rhs.state_ = nullptr;
         }

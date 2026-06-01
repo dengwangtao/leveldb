@@ -18,7 +18,8 @@ class SnapshotList;
 class SnapshotImpl : public Snapshot
 {
     public:
-        SnapshotImpl(SequenceNumber sequence_number) : sequence_number_(sequence_number)
+        SnapshotImpl(SequenceNumber sequence_number)
+            : sequence_number_(sequence_number)
         {
         }
 
@@ -45,7 +46,8 @@ class SnapshotImpl : public Snapshot
 class SnapshotList
 {
     public:
-        SnapshotList() : head_(0)
+        SnapshotList()
+            : head_(0)
         {
             head_.prev_ = &head_;
             head_.next_ = &head_;

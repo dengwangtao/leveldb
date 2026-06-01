@@ -23,7 +23,8 @@ class EnvWindowsTest : public testing::Test
             EnvWindowsTestHelper::SetReadOnlyMMapLimit(mmap_limit);
         }
 
-        EnvWindowsTest() : env_(Env::Default())
+        EnvWindowsTest()
+            : env_(Env::Default())
         {
         }
 

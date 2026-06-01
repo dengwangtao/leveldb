@@ -20,11 +20,45 @@
 namespace leveldb
 {
 
+/**
+SSTable 文件结构：
+
++-----------------------------+
+| Data Block 1                |
++-----------------------------+
+| Data Block 2                |
++-----------------------------+
+| ...                         |
++-----------------------------+
+| Data Block N                |
++-----------------------------+
+| Filter Block                |  可选
++-----------------------------+
+| Metaindex Block             |
++-----------------------------+
+| Index Block                 |
++-----------------------------+
+| Footer                      |
++-----------------------------+
+
+Data Block      存真正的 key-value
+Filter Block    存 Bloom Filter 等过滤器数据，可选
+Metaindex Block 存元信息索引，例如 filter block 的位置
+Index Block     存 data block 的索引
+Footer          存 metaindex block 和 index block 的位置
+*/
+
 struct TableBuilder::Rep
 {
         Rep(const Options& opt, WritableFile* f)
-            : options(opt), index_block_options(opt), file(f), offset(0), data_block(&options),
-              index_block(&index_block_options), num_entries(0), closed(false),
+            : options(opt),
+              index_block_options(opt),
+              file(f),
+              offset(0),
+              data_block(&options),
+              index_block(&index_block_options),
+              num_entries(0),
+              closed(false),
               filter_block(opt.filter_policy == nullptr ? nullptr : new FilterBlockBuilder(opt.filter_policy)),
               pending_index_entry(false)
         {
@@ -58,7 +92,8 @@ struct TableBuilder::Rep
         std::string compressed_output;
 };
 
-TableBuilder::TableBuilder(const Options& options, WritableFile* file) : rep_(new Rep(options, file))
+TableBuilder::TableBuilder(const Options& options, WritableFile* file)
+    : rep_(new Rep(options, file))
 {
     if (rep_->filter_block != nullptr)
     {
@@ -104,7 +139,8 @@ void TableBuilder::Add(const Slice& key, const Slice& value)
 
     if (r->pending_index_entry)
     {
-        assert(r->data_block.empty());
+        assert(r->data_block.empty()); // 如果存在 pending index entry，说明上一个 data block 已经 Flush 了，新 data
+                                       // block 还没开始写。所以当前 data block 应该是空的。
         r->options.comparator->FindShortestSeparator(&r->last_key, key);
         std::string handle_encoding;
         r->pending_handle.EncodeTo(&handle_encoding);

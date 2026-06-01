@@ -17,7 +17,8 @@ namespace leveldb
 static const size_t kFilterBaseLg = 11;
 static const size_t kFilterBase = 1 << kFilterBaseLg;
 
-FilterBlockBuilder::FilterBlockBuilder(const FilterPolicy* policy) : policy_(policy)
+FilterBlockBuilder::FilterBlockBuilder(const FilterPolicy* policy)
+    : policy_(policy)
 {
 }
 
@@ -87,7 +88,11 @@ void FilterBlockBuilder::GenerateFilter()
 }
 
 FilterBlockReader::FilterBlockReader(const FilterPolicy* policy, const Slice& contents)
-    : policy_(policy), data_(nullptr), offset_(nullptr), num_(0), base_lg_(0)
+    : policy_(policy),
+      data_(nullptr),
+      offset_(nullptr),
+      num_(0),
+      base_lg_(0)
 {
     size_t n = contents.size();
     if (n < 5)

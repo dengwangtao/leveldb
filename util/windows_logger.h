@@ -25,7 +25,8 @@ class WindowsLogger final : public Logger
         // Creates a logger that writes to the given file.
         //
         // The PosixLogger instance takes ownership of the file handle.
-        explicit WindowsLogger(std::FILE* fp) : fp_(fp)
+        explicit WindowsLogger(std::FILE* fp)
+            : fp_(fp)
         {
             assert(fp != nullptr);
         }

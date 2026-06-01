@@ -124,7 +124,9 @@ Status ReadBlock(RandomAccessFile* file, const ReadOptions& options, const Block
 
 // Implementation details follow.  Clients should ignore,
 
-inline BlockHandle::BlockHandle() : offset_(~static_cast<uint64_t>(0)), size_(~static_cast<uint64_t>(0))
+inline BlockHandle::BlockHandle()
+    : offset_(~static_cast<uint64_t>(0)),
+      size_(~static_cast<uint64_t>(0))
 {
 }
 

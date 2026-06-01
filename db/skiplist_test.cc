@@ -257,7 +257,8 @@ class ConcurrentTest
         SkipList<Key, Comparator> list_;
 
     public:
-        ConcurrentTest() : list_(Comparator(), &arena_)
+        ConcurrentTest()
+            : list_(Comparator(), &arena_)
         {
         }
 
@@ -372,7 +373,11 @@ class TestState
             DONE
         };
 
-        explicit TestState(int s) : seed_(s), quit_flag_(false), state_(STARTING), state_cv_(&mu_)
+        explicit TestState(int s)
+            : seed_(s),
+              quit_flag_(false),
+              state_(STARTING),
+              state_cv_(&mu_)
         {
         }
 

@@ -74,11 +74,13 @@ Status WindowsError(const std::string& context, DWORD error_code)
 class ScopedHandle
 {
     public:
-        ScopedHandle(HANDLE handle) : handle_(handle)
+        ScopedHandle(HANDLE handle)
+            : handle_(handle)
         {
         }
         ScopedHandle(const ScopedHandle&) = delete;
-        ScopedHandle(ScopedHandle&& other) noexcept : handle_(other.Release())
+        ScopedHandle(ScopedHandle&& other) noexcept
+            : handle_(other.Release())
         {
         }
         ~ScopedHandle()
@@ -190,7 +192,8 @@ class WindowsSequentialFile : public SequentialFile
 {
     public:
         WindowsSequentialFile(std::string filename, ScopedHandle handle)
-            : handle_(std::move(handle)), filename_(std::move(filename))
+            : handle_(std::move(handle)),
+              filename_(std::move(filename))
         {
         }
         ~WindowsSequentialFile() override
@@ -233,7 +236,8 @@ class WindowsRandomAccessFile : public RandomAccessFile
 {
     public:
         WindowsRandomAccessFile(std::string filename, ScopedHandle handle)
-            : handle_(std::move(handle)), filename_(std::move(filename))
+            : handle_(std::move(handle)),
+              filename_(std::move(filename))
         {
         }
 
@@ -270,7 +274,10 @@ class WindowsMmapReadableFile : public RandomAccessFile
     public:
         // base[0,length-1] contains the mmapped contents of the file.
         WindowsMmapReadableFile(std::string filename, char* mmap_base, size_t length, Limiter* mmap_limiter)
-            : mmap_base_(mmap_base), length_(length), mmap_limiter_(mmap_limiter), filename_(std::move(filename))
+            : mmap_base_(mmap_base),
+              length_(length),
+              mmap_limiter_(mmap_limiter),
+              filename_(std::move(filename))
         {
         }
 
@@ -303,7 +310,9 @@ class WindowsWritableFile : public WritableFile
 {
     public:
         WindowsWritableFile(std::string filename, ScopedHandle handle)
-            : pos_(0), handle_(std::move(handle)), filename_(std::move(filename))
+            : pos_(0),
+              handle_(std::move(handle)),
+              filename_(std::move(filename))
         {
         }
 
@@ -426,7 +435,8 @@ class WindowsFileLock : public FileLock
 {
     public:
         WindowsFileLock(ScopedHandle handle, std::string filename)
-            : handle_(std::move(handle)), filename_(std::move(filename))
+            : handle_(std::move(handle)),
+              filename_(std::move(filename))
         {
         }
 
@@ -781,7 +791,9 @@ class WindowsEnv : public Env
         // This structure is thread-safe because it is immutable.
         struct BackgroundWorkItem
         {
-                explicit BackgroundWorkItem(void (*function)(void* arg), void* arg) : function(function), arg(arg)
+                explicit BackgroundWorkItem(void (*function)(void* arg), void* arg)
+                    : function(function),
+                      arg(arg)
                 {
                 }
 
@@ -805,7 +817,9 @@ int MaxMmaps()
 }
 
 WindowsEnv::WindowsEnv()
-    : background_work_cv_(&background_work_mutex_), started_background_thread_(false), mmap_limiter_(MaxMmaps())
+    : background_work_cv_(&background_work_mutex_),
+      started_background_thread_(false),
+      mmap_limiter_(MaxMmaps())
 {
 }
 

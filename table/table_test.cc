@@ -95,10 +95,12 @@ struct STLLessThan
 {
         const Comparator* cmp;
 
-        STLLessThan() : cmp(BytewiseComparator())
+        STLLessThan()
+            : cmp(BytewiseComparator())
         {
         }
-        STLLessThan(const Comparator* c) : cmp(c)
+        STLLessThan(const Comparator* c)
+            : cmp(c)
         {
         }
         bool operator()(const std::string& a, const std::string& b) const
@@ -144,7 +146,8 @@ class StringSink : public WritableFile
 class StringSource : public RandomAccessFile
 {
     public:
-        StringSource(const Slice& contents) : contents_(contents.data(), contents.size())
+        StringSource(const Slice& contents)
+            : contents_(contents.data(), contents.size())
         {
         }
 
@@ -181,7 +184,8 @@ typedef std::map<std::string, std::string, STLLessThan> KVMap;
 class Constructor
 {
     public:
-        explicit Constructor(const Comparator* cmp) : data_(STLLessThan(cmp))
+        explicit Constructor(const Comparator* cmp)
+            : data_(STLLessThan(cmp))
         {
         }
         virtual ~Constructor() = default;
@@ -229,7 +233,10 @@ class Constructor
 class BlockConstructor : public Constructor
 {
     public:
-        explicit BlockConstructor(const Comparator* cmp) : Constructor(cmp), comparator_(cmp), block_(nullptr)
+        explicit BlockConstructor(const Comparator* cmp)
+            : Constructor(cmp),
+              comparator_(cmp),
+              block_(nullptr)
         {
         }
         ~BlockConstructor() override
@@ -271,7 +278,10 @@ class BlockConstructor : public Constructor
 class TableConstructor : public Constructor
 {
     public:
-        TableConstructor(const Comparator* cmp) : Constructor(cmp), source_(nullptr), table_(nullptr)
+        TableConstructor(const Comparator* cmp)
+            : Constructor(cmp),
+              source_(nullptr),
+              table_(nullptr)
         {
         }
         ~TableConstructor() override
@@ -330,7 +340,8 @@ class TableConstructor : public Constructor
 class KeyConvertingIterator : public Iterator
 {
     public:
-        explicit KeyConvertingIterator(Iterator* iter) : iter_(iter)
+        explicit KeyConvertingIterator(Iterator* iter)
+            : iter_(iter)
         {
         }
 
@@ -399,7 +410,9 @@ class KeyConvertingIterator : public Iterator
 class MemTableConstructor : public Constructor
 {
     public:
-        explicit MemTableConstructor(const Comparator* cmp) : Constructor(cmp), internal_comparator_(cmp)
+        explicit MemTableConstructor(const Comparator* cmp)
+            : Constructor(cmp),
+              internal_comparator_(cmp)
         {
             memtable_ = new MemTable(internal_comparator_);
             memtable_->Ref();
@@ -434,7 +447,9 @@ class MemTableConstructor : public Constructor
 class DBConstructor : public Constructor
 {
     public:
-        explicit DBConstructor(const Comparator* cmp) : Constructor(cmp), comparator_(cmp)
+        explicit DBConstructor(const Comparator* cmp)
+            : Constructor(cmp),
+              comparator_(cmp)
         {
             db_ = nullptr;
             NewDB();
@@ -530,7 +545,8 @@ static const int kNumTestArgs = sizeof(kTestArgList) / sizeof(kTestArgList[0]);
 class Harness : public testing::Test
 {
     public:
-        Harness() : constructor_(nullptr)
+        Harness()
+            : constructor_(nullptr)
         {
         }
 

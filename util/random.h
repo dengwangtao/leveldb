@@ -19,7 +19,8 @@ class Random
         uint32_t seed_;
 
     public:
-        explicit Random(uint32_t s) : seed_(s & 0x7fffffffu)
+        explicit Random(uint32_t s)
+            : seed_(s & 0x7fffffffu)
         {
             // Avoid bad seeds.
             if (seed_ == 0 || seed_ == 2147483647L)

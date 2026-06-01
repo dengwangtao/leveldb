@@ -86,7 +86,11 @@ class TwoLevelIterator : public Iterator
 
 TwoLevelIterator::TwoLevelIterator(Iterator* index_iter, BlockFunction block_function, void* arg,
                                    const ReadOptions& options)
-    : block_function_(block_function), arg_(arg), options_(options), index_iter_(index_iter), data_iter_(nullptr)
+    : block_function_(block_function),
+      arg_(arg),
+      options_(options),
+      index_iter_(index_iter),
+      data_iter_(nullptr)
 {
 }
 

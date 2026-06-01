@@ -144,7 +144,9 @@ class Limiter
 class PosixSequentialFile final : public SequentialFile
 {
     public:
-        PosixSequentialFile(std::string filename, int fd) : fd_(fd), filename_(std::move(filename))
+        PosixSequentialFile(std::string filename, int fd)
+            : fd_(fd),
+              filename_(std::move(filename))
         {
         }
         ~PosixSequentialFile() override
@@ -198,7 +200,9 @@ class PosixRandomAccessFile final : public RandomAccessFile
         // The new instance takes ownership of |fd|. |fd_limiter| must outlive this
         // instance, and will be used to determine if .
         PosixRandomAccessFile(std::string filename, int fd, Limiter* fd_limiter)
-            : has_permanent_fd_(fd_limiter->Acquire()), fd_(has_permanent_fd_ ? fd : -1), fd_limiter_(fd_limiter),
+            : has_permanent_fd_(fd_limiter->Acquire()),
+              fd_(has_permanent_fd_ ? fd : -1),
+              fd_limiter_(fd_limiter),
               filename_(std::move(filename))
         {
             if (!has_permanent_fd_)
@@ -272,7 +276,10 @@ class PosixMmapReadableFile final : public RandomAccessFile
         // acquired the right to use one mmap region, which will be released when this
         // instance is destroyed.
         PosixMmapReadableFile(std::string filename, char* mmap_base, size_t length, Limiter* mmap_limiter)
-            : mmap_base_(mmap_base), length_(length), mmap_limiter_(mmap_limiter), filename_(std::move(filename))
+            : mmap_base_(mmap_base),
+              length_(length),
+              mmap_limiter_(mmap_limiter),
+              filename_(std::move(filename))
         {
         }
 
@@ -305,7 +312,10 @@ class PosixWritableFile final : public WritableFile
 {
     public:
         PosixWritableFile(std::string filename, int fd)
-            : pos_(0), fd_(fd), is_manifest_(IsManifest(filename)), filename_(std::move(filename)),
+            : pos_(0),
+              fd_(fd),
+              is_manifest_(IsManifest(filename)),
+              filename_(std::move(filename)),
               dirname_(Dirname(filename_))
         {
         }
@@ -538,7 +548,9 @@ int LockOrUnlock(int fd, bool lock)
 class PosixFileLock : public FileLock
 {
     public:
-        PosixFileLock(int fd, std::string filename) : fd_(fd), filename_(std::move(filename))
+        PosixFileLock(int fd, std::string filename)
+            : fd_(fd),
+              filename_(std::move(filename))
         {
         }
 
@@ -864,7 +876,9 @@ class PosixEnv : public Env
         // This structure is thread-safe because it is immutable.
         struct BackgroundWorkItem
         {
-                explicit BackgroundWorkItem(void (*function)(void* arg), void* arg) : function(function), arg(arg)
+                explicit BackgroundWorkItem(void (*function)(void* arg), void* arg)
+                    : function(function),
+                      arg(arg)
                 {
                 }
 
@@ -922,7 +936,9 @@ int MaxOpenFiles()
 } // namespace
 
 PosixEnv::PosixEnv()
-    : background_work_cv_(&background_work_mutex_), started_background_thread_(false), mmap_limiter_(MaxMmaps()),
+    : background_work_cv_(&background_work_mutex_),
+      started_background_thread_(false),
+      mmap_limiter_(MaxMmaps()),
       fd_limiter_(MaxOpenFiles())
 {
 }

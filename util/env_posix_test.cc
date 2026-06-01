@@ -183,7 +183,8 @@ class EnvPosixTest : public testing::Test
             EnvPosixTestHelper::SetReadOnlyMMapLimit(mmap_limit);
         }
 
-        EnvPosixTest() : env_(Env::Default())
+        EnvPosixTest()
+            : env_(Env::Default())
         {
         }
 

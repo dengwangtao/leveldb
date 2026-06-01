@@ -80,7 +80,8 @@ class LOCKABLE Mutex
 class CondVar
 {
     public:
-        explicit CondVar(Mutex* mu) : mu_(mu)
+        explicit CondVar(Mutex* mu)
+            : mu_(mu)
         {
             assert(mu != nullptr);
         }

@@ -334,7 +334,8 @@ class LEVELDB_EXPORT EnvWrapper : public Env
 {
     public:
         // Initialize an EnvWrapper that delegates all calls to *t.
-        explicit EnvWrapper(Env* t) : target_(t)
+        explicit EnvWrapper(Env* t)
+            : target_(t)
         {
         }
         virtual ~EnvWrapper();

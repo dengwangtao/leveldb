@@ -26,7 +26,10 @@ static const int kValueSize = 1000;
 class CorruptionTest : public testing::Test
 {
     public:
-        CorruptionTest() : db_(nullptr), dbname_("/memenv/corruption_test"), tiny_cache_(NewLRUCache(100))
+        CorruptionTest()
+            : db_(nullptr),
+              dbname_("/memenv/corruption_test"),
+              tiny_cache_(NewLRUCache(100))
         {
             options_.env = &env_;
             options_.block_cache = tiny_cache_;

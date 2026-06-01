@@ -37,7 +37,9 @@ class LEVELDB_EXPORT Snapshot
 struct LEVELDB_EXPORT Range
 {
         Range() = default;
-        Range(const Slice& s, const Slice& l) : start(s), limit(l)
+        Range(const Slice& s, const Slice& l)
+            : start(s),
+              limit(l)
         {
         }
 

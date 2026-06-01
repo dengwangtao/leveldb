@@ -20,7 +20,8 @@ static uint32_t BloomHash(const Slice& key)
 class BloomFilterPolicy : public FilterPolicy
 {
     public:
-        explicit BloomFilterPolicy(int bits_per_key) : bits_per_key_(bits_per_key)
+        explicit BloomFilterPolicy(int bits_per_key)
+            : bits_per_key_(bits_per_key)
         {
             // 哈希函数的个数k
             // 布隆过滤器位数组的容量m

@@ -15,7 +15,8 @@ namespace leveldb
 class FindFileTest : public testing::Test
 {
     public:
-        FindFileTest() : disjoint_sorted_files_(true)
+        FindFileTest()
+            : disjoint_sorted_files_(true)
         {
         }
 
@@ -199,7 +200,8 @@ class AddBoundaryInputsTest : public testing::Test
         std::vector<FileMetaData*> all_files_;
         InternalKeyComparator icmp_;
 
-        AddBoundaryInputsTest() : icmp_(BytewiseComparator())
+        AddBoundaryInputsTest()
+            : icmp_(BytewiseComparator())
         {
         }
 

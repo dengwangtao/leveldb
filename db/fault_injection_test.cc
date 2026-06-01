@@ -106,11 +106,17 @@ struct FileState
         int64_t pos_at_last_flush_;
 
         FileState(const std::string& filename)
-            : filename_(filename), pos_(-1), pos_at_last_sync_(-1), pos_at_last_flush_(-1)
+            : filename_(filename),
+              pos_(-1),
+              pos_at_last_sync_(-1),
+              pos_at_last_flush_(-1)
         {
         }
 
-        FileState() : pos_(-1), pos_at_last_sync_(-1), pos_at_last_flush_(-1)
+        FileState()
+            : pos_(-1),
+              pos_at_last_sync_(-1),
+              pos_at_last_flush_(-1)
         {
         }
 
@@ -148,7 +154,9 @@ class TestWritableFile : public WritableFile
 class FaultInjectionTestEnv : public EnvWrapper
 {
     public:
-        FaultInjectionTestEnv() : EnvWrapper(Env::Default()), filesystem_active_(true)
+        FaultInjectionTestEnv()
+            : EnvWrapper(Env::Default()),
+              filesystem_active_(true)
         {
         }
         ~FaultInjectionTestEnv() override = default;
@@ -187,7 +195,10 @@ class FaultInjectionTestEnv : public EnvWrapper
 };
 
 TestWritableFile::TestWritableFile(const FileState& state, WritableFile* f, FaultInjectionTestEnv* env)
-    : state_(state), target_(f), writable_file_opened_(true), env_(env)
+    : state_(state),
+      target_(f),
+      writable_file_opened_(true),
+      env_(env)
 {
     assert(f != nullptr);
 }
@@ -438,7 +449,10 @@ class FaultInjectionTest : public testing::Test
         Options options_;
         DB* db_;
 
-        FaultInjectionTest() : env_(new FaultInjectionTestEnv), tiny_cache_(NewLRUCache(100)), db_(nullptr)
+        FaultInjectionTest()
+            : env_(new FaultInjectionTestEnv),
+              tiny_cache_(NewLRUCache(100)),
+              db_(nullptr)
         {
             dbname_ = testing::TempDir() + "fault_test";
             DestroyDB(dbname_, Options()); // Destroy any db from earlier run

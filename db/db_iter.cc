@@ -55,8 +55,14 @@ class DBIter : public Iterator
         };
 
         DBIter(DBImpl* db, const Comparator* cmp, Iterator* iter, SequenceNumber s, uint32_t seed)
-            : db_(db), user_comparator_(cmp), iter_(iter), sequence_(s), direction_(kForward), valid_(false),
-              rnd_(seed), bytes_until_read_sampling_(RandomCompactionPeriod())
+            : db_(db),
+              user_comparator_(cmp),
+              iter_(iter),
+              sequence_(s),
+              direction_(kForward),
+              valid_(false),
+              rnd_(seed),
+              bytes_until_read_sampling_(RandomCompactionPeriod())
         {
         }
 

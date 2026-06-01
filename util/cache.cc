@@ -76,7 +76,10 @@ struct LRUHandle
 class HandleTable
 {
     public:
-        HandleTable() : length_(0), elems_(0), list_(nullptr)
+        HandleTable()
+            : length_(0),
+              elems_(0),
+              list_(nullptr)
         {
             Resize();
         }
@@ -124,9 +127,10 @@ class HandleTable
     private:
         // The table consists of an array of buckets where each bucket is
         // a linked list of cache entries that hash into the bucket.
-        uint32_t length_;  // 表示bucket数量
-        uint32_t elems_;   // 元素数量
-        LRUHandle** list_; // bucket数组,每个元素是一个链表的头指针. 每个 bucket 是一个链表，链表通过LRUHandle::next_hash连接
+        uint32_t length_; // 表示bucket数量
+        uint32_t elems_;  // 元素数量
+        LRUHandle**
+            list_; // bucket数组,每个元素是一个链表的头指针. 每个 bucket 是一个链表，链表通过LRUHandle::next_hash连接
 
         // Return a pointer to slot that points to a cache entry that
         // matches key/hash.  If there is no such cache entry, return a
@@ -226,7 +230,9 @@ class LRUCache
         HandleTable table_ GUARDED_BY(mutex_);
 };
 
-LRUCache::LRUCache() : capacity_(0), usage_(0)
+LRUCache::LRUCache()
+    : capacity_(0),
+      usage_(0)
 {
     // Make empty circular linked lists.
     lru_.next = &lru_;
@@ -411,9 +417,11 @@ class ShardedLRUCache : public Cache
         }
 
     public:
-        explicit ShardedLRUCache(size_t capacity) : last_id_(0)
+        explicit ShardedLRUCache(size_t capacity)
+            : last_id_(0)
         {
-            const size_t per_shard = (capacity + (kNumShards - 1)) / kNumShards; // 向上取整, 每个分片的容量为总容量除以分片数量
+            const size_t per_shard =
+                (capacity + (kNumShards - 1)) / kNumShards; // 向上取整, 每个分片的容量为总容量除以分片数量
             for (int s = 0; s < kNumShards; s++)
             {
                 shard_[s].SetCapacity(per_shard);

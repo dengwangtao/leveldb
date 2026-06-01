@@ -90,7 +90,10 @@ class DBImpl : public DB
         // compactions that produced data for the specified "level".
         struct CompactionStats
         {
-                CompactionStats() : micros(0), bytes_read(0), bytes_written(0)
+                CompactionStats()
+                    : micros(0),
+                      bytes_read(0),
+                      bytes_written(0)
                 {
                 }
 

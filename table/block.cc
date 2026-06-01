@@ -26,7 +26,9 @@ inline uint32_t Block::NumRestarts() const
 }
 
 Block::Block(const BlockContents& contents)
-    : data_(contents.data.data()), size_(contents.data.size()), owned_(contents.heap_allocated)
+    : data_(contents.data.data()),
+      size_(contents.data.size()),
+      owned_(contents.heap_allocated)
 {
     if (size_ < sizeof(uint32_t))
     {
@@ -137,8 +139,12 @@ class Block::Iter : public Iterator
 
     public:
         Iter(const Comparator* comparator, const char* data, uint32_t restarts, uint32_t num_restarts)
-            : comparator_(comparator), data_(data), restarts_(restarts), num_restarts_(num_restarts),
-              current_(restarts_), restart_index_(num_restarts_)
+            : comparator_(comparator),
+              data_(data),
+              restarts_(restarts),
+              num_restarts_(num_restarts),
+              current_(restarts_),
+              restart_index_(num_restarts_)
         {
             assert(num_restarts_ > 0);
         }

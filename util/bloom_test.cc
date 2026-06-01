@@ -24,7 +24,8 @@ static Slice Key(int i, char* buffer)
 class BloomTest : public testing::Test
 {
     public:
-        BloomTest() : policy_(NewBloomFilterPolicy(10))
+        BloomTest()
+            : policy_(NewBloomFilterPolicy(10))
         {
         }
 

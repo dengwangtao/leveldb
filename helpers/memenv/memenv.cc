@@ -27,7 +27,9 @@ class FileState
     public:
         // FileStates are reference counted. The initial reference count is zero
         // and the caller must call Ref() at least once.
-        FileState() : refs_(0), size_(0)
+        FileState()
+            : refs_(0),
+              size_(0)
         {
         }
 
@@ -186,7 +188,9 @@ class FileState
 class SequentialFileImpl : public SequentialFile
 {
     public:
-        explicit SequentialFileImpl(FileState* file) : file_(file), pos_(0)
+        explicit SequentialFileImpl(FileState* file)
+            : file_(file),
+              pos_(0)
         {
             file_->Ref();
         }
@@ -229,7 +233,8 @@ class SequentialFileImpl : public SequentialFile
 class RandomAccessFileImpl : public RandomAccessFile
 {
     public:
-        explicit RandomAccessFileImpl(FileState* file) : file_(file)
+        explicit RandomAccessFileImpl(FileState* file)
+            : file_(file)
         {
             file_->Ref();
         }
@@ -251,7 +256,8 @@ class RandomAccessFileImpl : public RandomAccessFile
 class WritableFileImpl : public WritableFile
 {
     public:
-        WritableFileImpl(FileState* file) : file_(file)
+        WritableFileImpl(FileState* file)
+            : file_(file)
         {
             file_->Ref();
         }
@@ -294,7 +300,8 @@ class NoOpLogger : public Logger
 class InMemoryEnv : public EnvWrapper
 {
     public:
-        explicit InMemoryEnv(Env* base_env) : EnvWrapper(base_env)
+        explicit InMemoryEnv(Env* base_env)
+            : EnvWrapper(base_env)
         {
         }
 

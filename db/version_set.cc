@@ -184,7 +184,9 @@ class Version::LevelFileNumIterator : public Iterator
 {
     public:
         LevelFileNumIterator(const InternalKeyComparator& icmp, const std::vector<FileMetaData*>* flist)
-            : icmp_(icmp), flist_(flist), index_(flist->size())
+            : icmp_(icmp),
+              flist_(flist),
+              index_(flist->size())
         { // Marks as invalid
         }
         bool Valid() const override
@@ -698,7 +700,9 @@ class VersionSet::Builder
 
     public:
         // Initialize a builder with the files from *base and other info from *vset
-        Builder(VersionSet* vset, Version* base) : vset_(vset), base_(base)
+        Builder(VersionSet* vset, Version* base)
+            : vset_(vset),
+              base_(base)
         {
             base_->Ref();
             BySmallestKey cmp;
@@ -856,10 +860,20 @@ class VersionSet::Builder
 
 VersionSet::VersionSet(const std::string& dbname, const Options* options, TableCache* table_cache,
                        const InternalKeyComparator* cmp)
-    : env_(options->env), dbname_(dbname), options_(options), table_cache_(table_cache), icmp_(*cmp),
-      next_file_number_(2), manifest_file_number_(0), // Filled by Recover()
-      last_sequence_(0), log_number_(0), prev_log_number_(0), descriptor_file_(nullptr), descriptor_log_(nullptr),
-      dummy_versions_(this), current_(nullptr)
+    : env_(options->env),
+      dbname_(dbname),
+      options_(options),
+      table_cache_(table_cache),
+      icmp_(*cmp),
+      next_file_number_(2),
+      manifest_file_number_(0), // Filled by Recover()
+      last_sequence_(0),
+      log_number_(0),
+      prev_log_number_(0),
+      descriptor_file_(nullptr),
+      descriptor_log_(nullptr),
+      dummy_versions_(this),
+      current_(nullptr)
 {
     AppendVersion(new Version(this));
 }
@@ -1695,8 +1709,12 @@ Compaction* VersionSet::CompactRange(int level, const InternalKey* begin, const 
 }
 
 Compaction::Compaction(const Options* options, int level)
-    : level_(level), max_output_file_size_(MaxFileSizeForLevel(options, level)), input_version_(nullptr),
-      grandparent_index_(0), seen_key_(false), overlapped_bytes_(0)
+    : level_(level),
+      max_output_file_size_(MaxFileSizeForLevel(options, level)),
+      input_version_(nullptr),
+      grandparent_index_(0),
+      seen_key_(false),
+      overlapped_bytes_(0)
 {
     for (int i = 0; i < config::kNumLevels; i++)
     {

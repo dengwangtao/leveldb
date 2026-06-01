@@ -48,7 +48,8 @@ namespace
 class AtomicCounter
 {
     public:
-        AtomicCounter() : count_(0)
+        AtomicCounter()
+            : count_(0)
         {
         }
         void Increment()
@@ -102,7 +103,9 @@ bool IsManifestFile(const std::string& f)
 class TestEnv : public EnvWrapper
 {
     public:
-        explicit TestEnv(Env* base) : EnvWrapper(base), ignore_dot_files_(false)
+        explicit TestEnv(Env* base)
+            : EnvWrapper(base),
+              ignore_dot_files_(false)
         {
         }
 
@@ -172,8 +175,14 @@ class SpecialEnv : public EnvWrapper
         AtomicCounter random_read_counter_;
 
         explicit SpecialEnv(Env* base)
-            : EnvWrapper(base), delay_data_sync_(false), data_sync_error_(false), no_space_(false),
-              non_writable_(false), manifest_sync_error_(false), manifest_write_error_(false), log_file_close_(false),
+            : EnvWrapper(base),
+              delay_data_sync_(false),
+              data_sync_error_(false),
+              no_space_(false),
+              non_writable_(false),
+              manifest_sync_error_(false),
+              manifest_write_error_(false),
+              log_file_close_(false),
               count_random_reads_(false)
         {
         }
@@ -189,7 +198,9 @@ class SpecialEnv : public EnvWrapper
 
                 public:
                     DataFile(SpecialEnv* env, WritableFile* base, const std::string& fname)
-                        : env_(env), base_(base), fname_(fname)
+                        : env_(env),
+                          base_(base),
+                          fname_(fname)
                     {
                     }
 
@@ -242,7 +253,9 @@ class SpecialEnv : public EnvWrapper
                     WritableFile* base_;
 
                 public:
-                    ManifestFile(SpecialEnv* env, WritableFile* b) : env_(env), base_(b)
+                    ManifestFile(SpecialEnv* env, WritableFile* b)
+                        : env_(env),
+                          base_(b)
                     {
                     }
                     ~ManifestFile()
@@ -310,7 +323,9 @@ class SpecialEnv : public EnvWrapper
                     AtomicCounter* counter_;
 
                 public:
-                    CountingFile(RandomAccessFile* target, AtomicCounter* counter) : target_(target), counter_(counter)
+                    CountingFile(RandomAccessFile* target, AtomicCounter* counter)
+                        : target_(target),
+                          counter_(counter)
                     {
                     }
                     ~CountingFile() override
@@ -342,7 +357,9 @@ class DBTest : public testing::Test
 
         Options last_options_;
 
-        DBTest() : env_(new SpecialEnv(Env::Default())), option_config_(kDefault)
+        DBTest()
+            : env_(new SpecialEnv(Env::Default())),
+              option_config_(kDefault)
         {
             filter_policy_ = NewBloomFilterPolicy(10);
             dbname_ = testing::TempDir() + "db_test";
@@ -2402,7 +2419,8 @@ class ModelDB : public DB
                 KVMap map_;
         };
 
-        explicit ModelDB(const Options& options) : options_(options)
+        explicit ModelDB(const Options& options)
+            : options_(options)
         {
         }
         ~ModelDB() override = default;
@@ -2483,7 +2501,10 @@ class ModelDB : public DB
         class ModelIter : public Iterator
         {
             public:
-                ModelIter(const KVMap* map, bool owned) : map_(map), owned_(owned), iter_(map_->end())
+                ModelIter(const KVMap* map, bool owned)
+                    : map_(map),
+                      owned_(owned),
+                      iter_(map_->end())
                 {
                 }
                 ~ModelIter() override

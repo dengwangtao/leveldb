@@ -29,22 +29,30 @@ class LEVELDB_EXPORT Slice
 {
     public:
         // Create an empty slice.
-        Slice() : data_(""), size_(0)
+        Slice()
+            : data_(""),
+              size_(0)
         {
         }
 
         // Create a slice that refers to d[0,n-1].
-        Slice(const char* d, size_t n) : data_(d), size_(n)
+        Slice(const char* d, size_t n)
+            : data_(d),
+              size_(n)
         {
         }
 
         // Create a slice that refers to the contents of "s"
-        Slice(const std::string& s) : data_(s.data()), size_(s.size())
+        Slice(const std::string& s)
+            : data_(s.data()),
+              size_(s.size())
         {
         }
 
         // Create a slice that refers to s[0,strlen(s)-1]
-        Slice(const char* s) : data_(s), size_(strlen(s))
+        Slice(const char* s)
+            : data_(s),
+              size_(strlen(s))
         {
         }
 

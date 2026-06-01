@@ -22,7 +22,9 @@ namespace leveldb
 class RecoveryTest : public testing::Test
 {
     public:
-        RecoveryTest() : env_(Env::Default()), db_(nullptr)
+        RecoveryTest()
+            : env_(Env::Default()),
+              db_(nullptr)
         {
             dbname_ = testing::TempDir() + "recovery_test";
             DestroyDB(dbname_, Options());

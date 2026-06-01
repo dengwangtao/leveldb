@@ -48,7 +48,8 @@ class CacheTest : public testing::Test
         std::vector<int> deleted_values_;
         Cache* cache_;
 
-        CacheTest() : cache_(NewLRUCache(kCacheSize))
+        CacheTest()
+            : cache_(NewLRUCache(kCacheSize))
         {
             current_ = this;
         }

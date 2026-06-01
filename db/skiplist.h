@@ -153,7 +153,8 @@ class SkipList
 template <typename Key, class Comparator>
 struct SkipList<Key, Comparator>::Node
 {
-        explicit Node(const Key& k) : key(k)
+        explicit Node(const Key& k)
+            : key(k)
         {
         }
 
@@ -372,7 +373,10 @@ typename SkipList<Key, Comparator>::Node* SkipList<Key, Comparator>::FindLast() 
 
 template <typename Key, class Comparator>
 SkipList<Key, Comparator>::SkipList(Comparator cmp, Arena* arena)
-    : compare_(cmp), arena_(arena), head_(NewNode(0 /* any key will do */, kMaxHeight)), max_height_(1),
+    : compare_(cmp),
+      arena_(arena),
+      head_(NewNode(0 /* any key will do */, kMaxHeight)),
+      max_height_(1),
       rnd_(0xdeadbeef)
 {
     for (int i = 0; i < kMaxHeight; i++)

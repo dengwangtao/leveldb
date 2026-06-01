@@ -49,7 +49,8 @@ class LogTest : public testing::Test
 {
     public:
         LogTest()
-            : reading_(false), writer_(new Writer(&dest_)),
+            : reading_(false),
+              writer_(new Writer(&dest_)),
               reader_(new Reader(&source_, &report_, true /*checksum*/, 0 /*initial_offset*/))
         {
         }
@@ -224,7 +225,9 @@ class LogTest : public testing::Test
         class StringSource : public SequentialFile
         {
             public:
-                StringSource() : force_error_(false), returned_partial_(false)
+                StringSource()
+                    : force_error_(false),
+                      returned_partial_(false)
                 {
                 }
 
@@ -270,7 +273,8 @@ class LogTest : public testing::Test
         class ReportCollector : public Reader::Reporter
         {
             public:
-                ReportCollector() : dropped_bytes_(0)
+                ReportCollector()
+                    : dropped_bytes_(0)
                 {
                 }
                 void Corruption(size_t bytes, const Status& status) override

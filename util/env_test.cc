@@ -19,7 +19,8 @@ namespace leveldb
 class EnvTest : public testing::Test
 {
     public:
-        EnvTest() : env_(Env::Default())
+        EnvTest()
+            : env_(Env::Default())
         {
         }
 
@@ -120,7 +121,8 @@ TEST_F(EnvTest, RunMany)
             RunState* const state_; // Pointer to shared state.
             bool run = false;
 
-            Callback(RunState* s) : state_(s)
+            Callback(RunState* s)
+                : state_(s)
             {
             }
 
@@ -166,7 +168,9 @@ struct State
         int val GUARDED_BY(mu);
         int num_running GUARDED_BY(mu);
 
-        State(int val, int num_running) : val(val), num_running(num_running)
+        State(int val, int num_running)
+            : val(val),
+              num_running(num_running)
         {
         }
 };
