@@ -979,7 +979,7 @@ TEST(TableTest, ApproximateOffsetOfPlain)
     KVMap kvmap;
     Options options;
     options.block_size = 1024;
-    options.compression = kNoCompression;
+    options.compression = CompressionType::kNoCompression;
     c.Finish(options, &keys, &kvmap);
 
     ASSERT_TRUE(Between(c.ApproximateOffsetOf("abc"), 0, 0));
@@ -999,11 +999,11 @@ static bool CompressionSupported(CompressionType type)
 {
     std::string out;
     Slice in = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
-    if (type == kSnappyCompression)
+    if (type == CompressionType::kSnappyCompression)
     {
         return port::Snappy_Compress(in.data(), in.size(), &out);
     }
-    else if (type == kZstdCompression)
+    else if (type == CompressionType::kZstdCompression)
     {
         return port::Zstd_Compress(/*level=*/1, in.data(), in.size(), &out);
     }
@@ -1015,14 +1015,14 @@ class CompressionTableTest : public ::testing::TestWithParam<std::tuple<Compress
 };
 
 INSTANTIATE_TEST_SUITE_P(CompressionTests, CompressionTableTest,
-                         ::testing::Values(kSnappyCompression, kZstdCompression));
+                         ::testing::Values(CompressionType::kSnappyCompression, CompressionType::kZstdCompression));
 
 TEST_P(CompressionTableTest, ApproximateOffsetOfCompressed)
 {
     CompressionType type = ::testing::get<0>(GetParam());
     if (!CompressionSupported(type))
     {
-        GTEST_SKIP() << "skipping compression test: " << type;
+        GTEST_SKIP() << "skipping compression test: " << static_cast<int>(type);
     }
 
     Random rnd(301);

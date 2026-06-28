@@ -117,7 +117,7 @@ Status ReadBlock(RandomAccessFile* file, const ReadOptions& options, const Block
 
     switch (data[n])
     {
-        case kNoCompression:
+        case static_cast<char>(CompressionType::kNoCompression):
             if (data != buf)
             {
                 // File implementation gave us pointer to some other data.
@@ -137,7 +137,7 @@ Status ReadBlock(RandomAccessFile* file, const ReadOptions& options, const Block
 
             // Ok
             break;
-        case kSnappyCompression:
+        case static_cast<char>(CompressionType::kSnappyCompression):
         {
             size_t ulength = 0;
             if (!port::Snappy_GetUncompressedLength(data, n, &ulength))
@@ -158,7 +158,7 @@ Status ReadBlock(RandomAccessFile* file, const ReadOptions& options, const Block
             result->cachable = true;
             break;
         }
-        case kZstdCompression:
+        case static_cast<char>(CompressionType::kZstdCompression):
         {
             size_t ulength = 0;
             if (!port::Zstd_GetUncompressedLength(data, n, &ulength))

@@ -203,11 +203,11 @@ void TableBuilder::WriteBlock(BlockBuilder* block, BlockHandle* handle)
     // TODO(postrelease): Support more compression options: zlib?
     switch (type)
     {
-        case kNoCompression:
+        case CompressionType::kNoCompression:
             block_contents = raw;
             break;
 
-        case kSnappyCompression:
+        case CompressionType::kSnappyCompression:
         {
             std::string* compressed = &r->compressed_output;
             if (port::Snappy_Compress(raw.data(), raw.size(), compressed) &&
@@ -220,12 +220,12 @@ void TableBuilder::WriteBlock(BlockBuilder* block, BlockHandle* handle)
                 // Snappy not supported, or compressed less than 12.5%, so just
                 // store uncompressed form
                 block_contents = raw;
-                type = kNoCompression;
+                type = CompressionType::kNoCompression;
             }
             break;
         }
 
-        case kZstdCompression:
+        case CompressionType::kZstdCompression:
         {
             std::string* compressed = &r->compressed_output;
             if (port::Zstd_Compress(r->options.zstd_compression_level, raw.data(), raw.size(), compressed) &&
@@ -238,7 +238,7 @@ void TableBuilder::WriteBlock(BlockBuilder* block, BlockHandle* handle)
                 // Zstd not supported, or compressed less than 12.5%, so just
                 // store uncompressed form
                 block_contents = raw;
-                type = kNoCompression;
+                type = CompressionType::kNoCompression;
             }
             break;
         }
@@ -262,7 +262,7 @@ void TableBuilder::WriteRawBlock(const Slice& block_contents, CompressionType ty
     if (r->status.ok())
     {
         char trailer[kBlockTrailerSize];
-        trailer[0] = type;
+        trailer[0] = static_cast<char>(type);
         uint32_t crc = crc32c::Value(block_contents.data(), block_contents.size());
         crc = crc32c::Extend(crc, trailer, 1); // Extend crc to cover block type
         EncodeFixed32(trailer + 1, crc32c::Mask(crc));
@@ -291,7 +291,7 @@ Status TableBuilder::Finish()
     // Write filter block
     if (ok() && r->filter_block != nullptr)
     {
-        WriteRawBlock(r->filter_block->Finish(), kNoCompression, &filter_block_handle);
+        WriteRawBlock(r->filter_block->Finish(), CompressionType::kNoCompression, &filter_block_handle);
     }
 
     // Write metaindex block

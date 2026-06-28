@@ -23,7 +23,8 @@ class Snapshot;
 // sequence of key,value pairs.  Each block may be compressed before
 // being stored in a file.  The following enum describes which
 // compression method (if any) is used to compress a block.
-enum CompressionType
+// 数据库内容存储在一组块中，每个块包含一系列键值对。每个块在存储到文件之前可能会被压缩。以下枚举描述了使用哪种压缩方法（如果有的话）来压缩块。
+enum class CompressionType
 {
     // NOTE: do not change the values of existing entries, as these are
     // part of the persistent format on disk.
@@ -132,7 +133,7 @@ struct LEVELDB_EXPORT Options
         // worth switching to kNoCompression.  Even if the input data is
         // incompressible, the kSnappyCompression implementation will
         // efficiently detect that and will switch to uncompressed mode.
-        CompressionType compression = kSnappyCompression;
+        CompressionType compression = CompressionType::kSnappyCompression;
 
         // Compression level for zstd.
         // Currently only the range [-5,22] is supported. Default is 1.

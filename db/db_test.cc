@@ -406,7 +406,7 @@ class DBTest : public testing::Test
                     options.filter_policy = filter_policy_;
                     break;
                 case kUncompressed:
-                    options.compression = kNoCompression;
+                    options.compression = CompressionType::kNoCompression;
                     break;
                 default:
                     break;
@@ -1398,7 +1398,7 @@ TEST_F(DBTest, RepeatedWritesToSameKey)
 TEST_F(DBTest, SparseMerge)
 {
     Options options = CurrentOptions();
-    options.compression = kNoCompression;
+    options.compression = CompressionType::kNoCompression;
     Reopen(&options);
 
     FillLevels("A", "Z");
@@ -1454,7 +1454,7 @@ TEST_F(DBTest, ApproximateSizes)
     {
         Options options = CurrentOptions();
         options.write_buffer_size = 100000000; // Large write buffer
-        options.compression = kNoCompression;
+        options.compression = CompressionType::kNoCompression;
         DestroyAndReopen();
 
         ASSERT_TRUE(Between(Size("", "xyz"), 0, 0));
@@ -1518,7 +1518,7 @@ TEST_F(DBTest, ApproximateSizes_MixOfSmallAndLarge)
     do
     {
         Options options = CurrentOptions();
-        options.compression = kNoCompression;
+        options.compression = CompressionType::kNoCompression;
         Reopen();
 
         Random rnd(301);

@@ -24,7 +24,7 @@ class AutoCompactTest : public testing::Test
             options_.block_cache = tiny_cache_;
             DestroyDB(dbname_, options_);
             options_.create_if_missing = true;
-            options_.compression = kNoCompression;
+            options_.compression = CompressionType::kNoCompression;
             EXPECT_LEVELDB_OK(DB::Open(options_, dbname_, &db_));
         }
 

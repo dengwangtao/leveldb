@@ -12,6 +12,18 @@
 #include "leveldb/iterator.h"
 #include "leveldb/options.h"
 
+/*
+为什么 db.h 不 include 所有内部头文件？
+    答案是隔离实现。用户只需要看到 public API，不需要知道DBImpl、MemTable、VersionSet、TableCache。
+
+
+写入：db_impl.cc + write_batch.cc + log_writer.cc + memtable.cc
+读取：db_impl.cc + version_set.cc + table_cache.cc + table.cc
+迭代：db_impl.cc + db_iter.cc + merger.cc + two_level_iterator.cc
+恢复：db_impl.cc + version_set.cc + log_reader.cc
+压缩：db_impl.cc + version_set.cc + table_builder.cc
+*/
+
 namespace leveldb
 {
 
@@ -30,7 +42,9 @@ class WriteBatch;
 class LEVELDB_EXPORT Snapshot
 {
     protected:
-        virtual ~Snapshot();
+        virtual ~Snapshot(); // protected virtual。用户不能直接 delete snapshot
+        // 必须调用 db->ReleaseSnapshot(snapshot)。这是刻意设计，因为 snapshot 的真实对象由 DBImpl 内部的 snapshot list
+        // 管理，直接 delete 会破坏内部生命周期。
 };
 
 // A range of keys
@@ -58,6 +72,7 @@ class LEVELDB_EXPORT DB
         // OK on success.
         // Stores nullptr in *dbptr and returns a non-OK status on error.
         // Caller should delete *dbptr when it is no longer needed.
+        // 静态工厂函数
         static Status Open(const Options& options, const std::string& name, DB** dbptr);
 
         DB() = default;
@@ -90,6 +105,7 @@ class LEVELDB_EXPORT DB
         // a status for which Status::IsNotFound() returns true.
         //
         // May return some other Status on an error.
+        // 找到了就把 value 写入 *value，返回 OK；没找到时 value 保持不变，返回 NotFound。
         virtual Status Get(const ReadOptions& options, const Slice& key, std::string* value) = 0;
 
         // Return a heap-allocated iterator over the contents of the database.

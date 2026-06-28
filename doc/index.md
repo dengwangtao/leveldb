@@ -331,7 +331,7 @@ benchmarks show a performance improvement:
 
 ```c++
 leveldb::Options options;
-options.compression = leveldb::kNoCompression;
+options.compression = leveldb::CompressionType::kNoCompression;
 ... leveldb::DB::Open(options, name, ...) ....
 ```
 
