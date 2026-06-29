@@ -163,4 +163,7 @@ inline Status& Status::operator=(Status&& rhs) noexcept
 
 } // namespace leveldb
 
+
+constexpr size_t StatusSize = sizeof(leveldb::Status);
+
 #endif // STORAGE_LEVELDB_INCLUDE_STATUS_H_
