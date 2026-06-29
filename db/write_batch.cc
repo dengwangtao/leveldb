@@ -27,6 +27,7 @@ namespace leveldb
 {
 
 // WriteBatch header has an 8-byte sequence number followed by a 4-byte count.
+// 8字节的序列号 + 4字节的count
 static const size_t kHeader = 12;
 
 // header:
@@ -35,7 +36,7 @@ static const size_t kHeader = 12;
 // ╠═════════════════╬══════════════╣
 // ║ sequence number ║    count     ║
 // ╚═════════════════╩══════════════╝
-// one record:
+// one record 单条记录的格式:
 // ╔════════════════════╦══════════════╦═══════════════╦══════════════╦═════════════════╗
 // ║       1bytes       ║    4bytes    ║ key len bytes ║    4bytes    ║ value len bytes ║
 // ╠════════════════════╬══════════════╬═══════════════╬══════════════╬═════════════════╣
