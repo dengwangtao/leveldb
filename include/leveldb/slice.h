@@ -19,11 +19,14 @@
 #include <cstddef>
 #include <cstring>
 #include <string>
+#include <string_view>
 
 #include "leveldb/export.h"
 
 namespace leveldb
 {
+
+#if false
 
 class LEVELDB_EXPORT Slice
 {
@@ -156,6 +159,123 @@ inline int Slice::compare(const Slice& b) const
     }
     return r;
 }
+
+#else
+
+class LEVELDB_EXPORT Slice
+{
+    public:
+        Slice() = default;
+
+        Slice(const char* d, size_t n)
+            : view_(d, n)
+        {
+        }
+
+        Slice(const std::string& s)
+            : view_(s)
+        {
+        }
+
+        Slice(const char* s)
+            : view_(s, strlen(s))
+        {
+        }
+
+        Slice(const Slice&) = default;
+        Slice& operator=(const Slice&) = default;
+
+        const char* data() const
+        {
+            return view_.data();
+        }
+
+        size_t size() const
+        {
+            return view_.size();
+        }
+
+        bool empty() const
+        {
+            return view_.empty();
+        }
+
+        const char* begin() const
+        {
+            return view_.data();
+        }
+        const char* end() const
+        {
+            return view_.data() + view_.size();
+        }
+
+        // REQUIRES: n < size()
+        char operator[](size_t n) const
+        {
+            assert(n < size());
+            return view_[n];
+        }
+
+        void clear()
+        {
+            view_ = {};
+        }
+
+        const std::string_view& view() const
+        {
+            return view_;
+        }
+
+        // Drop the first "n" bytes from this slice.
+        void remove_prefix(size_t n)
+        {
+            assert(n <= size());
+            view_ = view_.substr(n);
+        }
+
+        // Return a string that contains the copy of the referenced data.
+        std::string ToString() const
+        {
+            return std::string(view_);
+        }
+
+        // Three-way comparison.  Returns value:
+        //   <  0 iff "*this" <  "b",
+        //   == 0 iff "*this" == "b",
+        //   >  0 iff "*this" >  "b"
+        int compare(const Slice& b) const;
+
+        // Return true iff "x" is a prefix of "*this"
+        bool starts_with(const Slice& x) const
+        {
+            return view_.starts_with(x.view_);
+        }
+
+    private:
+        std::string_view view_;
+};
+
+inline bool operator==(const Slice& x, const Slice& y)
+{
+    return ((x.size() == y.size()) && (x.view() == y.view()));
+}
+
+inline bool operator!=(const Slice& x, const Slice& y)
+{
+    return !(x == y);
+}
+
+inline int Slice::compare(const Slice& b) const
+{
+    int r = view_.compare(b.view());
+    if (r < 0)
+        return -1;
+    if (r > 0)
+        return +1;
+    return 0;
+}
+
+#endif
 
 } // namespace leveldb
 

@@ -27,6 +27,10 @@ std::string NowString()
 
 int main()
 {
+    leveldb::Status s = leveldb::Status::NotFound("can't find something");
+    std::cout << "Status: " << s.ToString() << std::endl;
+
+
     leveldb::DB* db = nullptr;
 
     leveldb::Options options;
